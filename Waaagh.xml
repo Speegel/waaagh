@@ -1,0 +1,26 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:schemaLocation="http://www.blizzard.com/wow/ui/ C:\Projects\WoW\Bin\Interface\FrameXML\UI.xsd">
+	<!-- $Id$ -->
+
+	<!-- Localization -->
+	<Script file="Localization.lua"/>
+
+	<!-- My Script -->
+	<Script file="lib.lua"/>
+	<Script file="tank.lua"/>
+	<Script file="zerk.lua"/>
+	<Script file="shoot.lua"/>
+
+	<!-- My AddOn Frames -->
+	<Frame name="WaaaghFrame" parent="UIParent">
+		<Scripts>
+			<OnLoad>
+				Waaagh_OnLoad();
+			</OnLoad>
+			<OnEvent>
+				Waaagh_OnEvent(event);
+			</OnEvent>
+		</Scripts>
+	</Frame>
+</Ui>

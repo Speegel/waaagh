@@ -1,0 +1,63 @@
+--------------------------------------------------
+
+-- Tank - Handles the combat sequence
+
+--------------------------------------------------
+
+function Tank()
+    -- 1, Auto attack closest target
+    if Waaagh_Configuration["AutoAttack"] and not WaaaghAttack then
+        AttackTarget()
+    end
+
+    -- Revenge
+    if WaaaghCombat and UnitMana("player") >= 5 and IsSpellReady(ABILITY_REVENGE_WAAAGH) then
+        Debug("30. Revenge")
+        CastSpellByName(ABILITY_REVENGE_WAAAGH)
+    end
+
+    -- Bloodthirst
+    if WaaaghBloodthirst and UnitMana("player") >= 30 and IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
+        Debug("23. Bloodthirst")
+        CastSpellByName(ABILITY_BLOODTHIRST_WAAAGH)
+        -- WaaaghLastSpellCast = GetTime()
+    end
+
+    -- Battle Shout
+    if not HasBuff("player", "Ability_Warrior_BattleShout") and UnitMana("player") >= 10 and IsSpellReady(ABILITY_BATTLE_SHOUT_WAAAGH) then
+        Debug("28. Battle Shout")
+        CastSpellByName(ABILITY_BATTLE_SHOUT_WAAAGH)
+        -- WaaaghLastSpellCast = GetTime()
+    end
+
+    -- Sunder Armor (until 5)
+    if not HasDebuff("target", "Ability_Warrior_Sunder", 5) and UnitMana("player") >= 15 and IsSpellReady(ABILITY_SUNDER_ARMOR_WAAAGH) then
+        Debug("27. Sunder Armor (not 5)")
+        CastSpellByName(ABILITY_SUNDER_ARMOR_WAAAGH)
+        WaaaghLastSunder = GetTime()
+        -- WaaaghLastSpellCast = GetTime()
+    end
+
+    -- Bloodrage
+    if UnitMana("player") <= 100 and (UnitHealth("player") / UnitHealthMax("player") * 100) >= 25 and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
+        Debug("46. Bloodrage")
+        CastSpellByName(ABILITY_BLOODRAGE_WAAAGH)
+    end
+
+    -- Shield Block
+    if HasShield() and WaaaghCombat and (UnitName("targettarget") == UnitName("player")) and UnitMana("player") >= 10 and IsSpellReady(ABILITY_SHIELD_BLOCK_WAAAGH) then
+        Debug("32. Shield Block")
+        CastSpellByName(ABILITY_SHIELD_BLOCK_WAAAGH)
+    end
+
+    -- Dump rage with Heroic Strike or Cleave
+    if (not IsSpellReady(ABILITY_REVENGE_WAAAGH)) and (WaaaghBloodthirst and not IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH)) then
+        -- Heroic Strike
+        if UnitMana("player") >= 45 and IsSpellReady(ABILITY_HEROIC_STRIKE_WAAAGH) then
+            Debug("52. Heroic Strike")
+            CastSpellByName(ABILITY_HEROIC_STRIKE_WAAAGH)
+            -- WaaaghLastSpellCast = GetTime()
+            -- No global cooldown, added anyway to prevent Heroic Strike from being spammed over other abilities
+        end
+    end
+end

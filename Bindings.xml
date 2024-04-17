@@ -1,0 +1,41 @@
+<Bindings>
+	<Binding name = "TANK" header = "WAAAGH">
+		Tank()
+	</Binding>
+	<Binding name = "ZERK" header = "WAAAGH">
+		Zerk()
+	</Binding>
+	<Binding name = "SHOOT" header = "WAAAGH">
+		Shoot()
+	</Binding>
+	<Binding name = "WAAAGH_AOE" header = "WAAAGH">
+		Waaagh_SlashCommand("aoe")
+	</Binding>
+	<Binding name = "WAAAGH_WW" header = "WAAAGH">
+		Waaagh_SlashCommand("ability Whirlwind")
+	</Binding>
+	<Binding name = "WAAAGH_THREAT" header = "WAAAGH">
+		Waaagh_SlashCommand("threat")
+	</Binding>
+	<Binding name = "WAAAGH_DW" header = "WAAAGH">
+		Waaagh_SlashCommand("ability Death Wish")
+	</Binding>
+	<Binding name = "WAAAGH_CHARGE" header = "WAAAGH">
+		Waaagh_SlashCommand("charge")
+	</Binding>
+	<Binding name = "WAAAGH_BLOCK" header = "WAAAGH">
+		Waaagh_SlashCommand("block")
+	</Binding>
+	<Binding name = "WAAAGH_SHOOT" header = "WAAAGH">
+		Waaagh_SlashCommand("shoot")
+	</Binding>
+	<Binding name = "WAAAGH_AUTOATTACK" header = "WAAAGH">
+		Waaagh_SlashCommand("attack")
+	</Binding>
+	<Binding name = "WAAAGH_TANKMODE" header = "WAAAGH">
+		Waaagh_SlashCommand("prot")
+	</Binding>
+	<Binding name = "WAAAGH_DEMOSHOUT" header = "WAAAGH">
+		Waaagh_SlashCommand("ability Demoralizing Shout")
+	</Binding>
+</Bindings>
