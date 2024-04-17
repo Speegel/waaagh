@@ -2431,7 +2431,7 @@ function Waaagh_OnLoad()
     FlurryCombatTotal = 0
     WaaaghCombatTotal = 0
     SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
-    SLASH_WAAAGH1 = "/fury"
+    SLASH_WAAAGH1 = "/waaagh"
 end
 
 --------------------------------------------------

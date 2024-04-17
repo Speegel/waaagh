@@ -25,12 +25,12 @@ Toggle Tank mode
 Some commands exists as key bindings, but for most commands one has to write a macro to make them usable during combat.
 To get a button to press on the action bar, create a macro
 
-    /fury juju power
+    /waaagh juju power
 
 To get the correct Icon for the macro, edit the macro file in a text editor **WTF/<account>/<character>/macros-cache.txt**, change the icon name to the correct one. See below for some icon names.
 
     MACRO 16777224 "Power" INV_Misc_MonsterScales_11
-        /fury juju power
+        /waaagh juju power
     END
 
 ## Reference
@@ -105,48 +105,48 @@ To get the correct Icon for the macro, edit the macro file in a text editor **WT
 
 ### operational Control
 ```
-/fury - uses Waaagh
-/fury block - Enter Defensive Stance and do Shield Block
-/fury charge - uses Intercept or Charge sequence
-/fury shoot - fires ranged weapon
-/fury aoe - enables cleave and whirlwind, disables overpower, bloodhtirst, Heroic Strike (Switched off when fewer than 2 enemies)
-/fury toggle - toggles Waaagh on/off
-/fury threat - enables Cleave or Heroic Strike based on current settings, use on threat critical fights to decrease threat build up
-/fury juju flurry|power|might|ember|chill - enables buff on every cooldown, chill only on Kel'Thuzad and Sapphiron
-/fury prot - enables shield block and sunder and makes Defensive Stance default stance.
-/fury ooi - enables Oil of Immolation whenever OoI buff is not up
-/fury Earthstrike - toggles use of Earthstrike on every cooldown
-/fury Slayer's Crest - toggles use of Slayer's Crest on every cooldown
-/fury kots - toggles use of KotS on every cooldown
-/fury ability <name> - toggles the use of abilities. Must use correct names with capitalization, ie. Heroic Strike, Rend etc.
-/fury attack - toggles the use of auto select target.
-/fury cons - will report enabled consumables
+/waaagh - uses Waaagh
+/waaagh block - Enter Defensive Stance and do Shield Block
+/waaagh charge - uses Intercept or Charge sequence
+/waaagh shoot - fires ranged weapon
+/waaagh aoe - enables cleave and whirlwind, disables overpower, bloodhtirst, Heroic Strike (Switched off when fewer than 2 enemies)
+/waaagh toggle - toggles Waaagh on/off
+/waaagh threat - enables Cleave or Heroic Strike based on current settings, use on threat critical fights to decrease threat build up
+/waaagh juju flurry|power|might|ember|chill - enables buff on every cooldown, chill only on Kel'Thuzad and Sapphiron
+/waaagh prot - enables shield block and sunder and makes Defensive Stance default stance.
+/waaagh ooi - enables Oil of Immolation whenever OoI buff is not up
+/waaagh Earthstrike - toggles use of Earthstrike on every cooldown
+/waaagh Slayer's Crest - toggles use of Slayer's Crest on every cooldown
+/waaagh kots - toggles use of KotS on every cooldown
+/waaagh ability <name> - toggles the use of abilities. Must use correct names with capitalization, ie. Heroic Strike, Rend etc.
+/waaagh attack - toggles the use of auto select target.
+/waaagh cons - will report enabled consumables
 ```
 ### Setup commands
 ```
-/fury dance <number> - sets rage allowed to be wasted when switching stance ("dancing")
-/fury attackrage <number> - sets minimum rage required when using Heroic Strike or Cleave
-/fury rage <number> - sets maximum rage allowed when using abilities to gain rage
-/fury bloodrage <number> - sets minimum percent of health required when using Bloodrage
-/fury debuff - Try remove debuff in rotation, might use consumables
-/fury default - Reset all configuration settings to default
-/fury flurrytrigger <number> - Set rage level, when to start using Hamstring when Flurry isn't up
-/fury hamstring <number> - sets maximum percent of health allowed when using Hamstring on NPCs
-/fury berserk <number> - sets minimum percent of health required when using Berserk
-/fury deathwish <number> - sets minimum percent of health required when using Death Wish
-/fury demodiff <number> - If Target is x levels below Demoralizing Shout is not used
-/fury executeswap - Toggles use of Outfitter addon, name the item set 'Execute'.
-/fury stance <name> - sets stance to return to after switching stance. If default is selected it will return to your last used stance. If no stance is selected it will disable stance switching. Must use correct names with capitalization.
-/fury talents - Rescan range spells and talent tree (needed after action bar buttons have moved)
+/waaagh dance <number> - sets rage allowed to be wasted when switching stance ("dancing")
+/waaagh attackrage <number> - sets minimum rage required when using Heroic Strike or Cleave
+/waaagh rage <number> - sets maximum rage allowed when using abilities to gain rage
+/waaagh bloodrage <number> - sets minimum percent of health required when using Bloodrage
+/waaagh debuff - Try remove debuff in rotation, might use consumables
+/waaagh default - Reset all configuration settings to default
+/waaagh flurrytrigger <number> - Set rage level, when to start using Hamstring when Flurry isn't up
+/waaagh hamstring <number> - sets maximum percent of health allowed when using Hamstring on NPCs
+/waaagh berserk <number> - sets minimum percent of health required when using Berserk
+/waaagh deathwish <number> - sets minimum percent of health required when using Death Wish
+/waaagh demodiff <number> - If Target is x levels below Demoralizing Shout is not used
+/waaagh executeswap - Toggles use of Outfitter addon, name the item set 'Execute'.
+/waaagh stance <name> - sets stance to return to after switching stance. If default is selected it will return to your last used stance. If no stance is selected it will disable stance switching. Must use correct names with capitalization.
+/waaagh talents - Rescan range spells and talent tree (needed after action bar buttons have moved)
 ```
 Oufitter addon can be downloaded [here](https://github.com/isitLoVe/Outfitter)!
 
 ### Debugging
 ```
-/fury help [command] - prints help text
-/fury debug - toggles debug mode
-/fury distance - show distance to target  
-/fury log [on|off] - Start a new channel for logging commands will be saved to Logs folder
-/fury unit [player|target] - shows buffs and debuffs for player or target
-/fury where - info about whereabouts
+/waaagh help [command] - prints help text
+/waaagh debug - toggles debug mode
+/waaagh distance - show distance to target  
+/waaagh log [on|off] - Start a new channel for logging commands will be saved to Logs folder
+/waaagh unit [player|target] - shows buffs and debuffs for player or target
+/waaagh where - info about whereabouts
 ```
