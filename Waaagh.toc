@@ -5,6 +5,6 @@
 ## eMail: cubenicke@gmail.com (Orig bhaerau@gmail.com)
 ## DefaultState: enabled
 ## SavedVariables: Waaagh_Configuration, Waaagh_Runners, Waaagh_ImmuneDisarm
-## OptionalDeps: IsMounted, Outfitter
+## OptionalDeps: IsMounted, Outfitter, pfUI, ShaguTweaks, SuperMacro
 IsMounted\IsMounted.xml
 Waaagh.xml

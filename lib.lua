@@ -4,7 +4,7 @@
 --
 --------------------------------------------------
 -- Setup configuration to default or only new ones
-local function DoUpdateConfiguration(defaults)
+function DoUpdateConfiguration(defaults)
     local configs = {
 
       {"AutoAttack", true},       -- Set to false to disable auto-attack
@@ -80,7 +80,7 @@ end
 
 --------------------------------------------------
 -- Init function
-local function Waaagh_Configuration_Init()
+function Waaagh_Configuration_Init()
 
     WAAAGH_VERSION = "1.17.4"
 
@@ -102,7 +102,7 @@ end
 --
 --------------------------------------------------
 -- Print msg to console
-local function Print(msg)
+function Print(msg)
     if not DEFAULT_CHAT_FRAME then
         return
     end
@@ -111,7 +111,7 @@ end
 
 --------------------------------------------------
 -- Output debug info to console
-local function Debug(msg)
+function Debug(msg)
     if (msg
       or "") == "" then
         WaaaghRageDumped = nil
@@ -136,7 +136,7 @@ end
 
 --------------------------------------------------
 -- Log fury debug to channel and log file
-local function LogToFile(enable)
+function LogToFile(enable)
     if enable then
         LoggingChat(1)
         LoggingCombat(1)
@@ -166,7 +166,7 @@ end
 
 --------------------------------------------------
 -- Check if unit has debuff of specific type
-local function HasDebuffType(unit, type)
+function HasDebuffType(unit, type)
     local id = 1
     if not type then
         return nil
@@ -184,7 +184,7 @@ end
 
 --------------------------------------------------
 
-local function DoShapeShift(stance)
+function DoShapeShift(stance)
     local stances = {ABILITY_BATTLE_STANCE_WAAAGH, ABILITY_DEFENSIVE_STANCE_WAAAGH, ABILITY_BERSERKER_STANCE_WAAAGH}
     CastShapeshiftForm(stance)
     WaaaghLastStanceCast = GetTime()
@@ -193,7 +193,7 @@ end
 
 --------------------------------------------------
 -- Print unit buffs and debuffs
-local function PrintEffects(unit)
+function PrintEffects(unit)
     local id = 1
     if UnitBuff(unit, id) then
         Print(SLASH_BUFFS_WAAAGH)
@@ -214,6 +214,7 @@ local function PrintEffects(unit)
         end
     end
 end
+
 
 --------------------------------------------------
 -- list of targets where resistance is useful
@@ -252,7 +253,7 @@ local res = {
 
 --------------------------------------------------
 -- Check if boss 'requires' resistance of specific type
-local function IsUseRes(type)
+function IsUseRes(type)
     for _, name in pairs(res[type]) do
         if UnitName("target") == name then
             return true
@@ -267,7 +268,7 @@ end
 --
 --------------------------------------------------
 -- Detect spells on action bars, to be used for range checks
-local function Waaagh_InitDistance()
+function Waaagh_InitDistance()
     local found = 0
     yard30 = nil
     yard25 = nil
@@ -352,7 +353,7 @@ end
 
 --------------------------------------------------
 -- Detect distance to target
-local function Waaagh_Distance()
+function Waaagh_Distance()
     if not UnitCanAttack("player", "target") then
         return 100 -- invalid target
     elseif yard05
@@ -377,7 +378,7 @@ end
 
 --------------------------------------------------
 -- Get spell id from name
-local function SpellId(spellname)
+function SpellId(spellname)
     local id = 1
     for i = 1, GetNumSpellTabs() do
         local _, _, _, numSpells = GetSpellTabInfo(i)
@@ -394,7 +395,7 @@ end
 
 --------------------------------------------------
 -- Check remaining cooldown on spell (0 - Ready)
-local function IsSpellReadyIn(spellname)
+function IsSpellReadyIn(spellname)
     local id = SpellId(spellname)
     if id then
         local start, duration = GetSpellCooldown(id, 0)
@@ -413,32 +414,77 @@ end
 
 --------------------------------------------------
 -- Return if spell is ready
-local function IsSpellReady(spellname)
+function IsSpellReady(spellname)
     return IsSpellReadyIn(spellname) == 0
  end
 
 --------------------------------------------------
 -- Detect if unit has specific number of debuffs
-local function HasDebuff(unit, texturename, amount)
+function HasDebuff(unit, texturename, amount)
     local id = 1
     while UnitDebuff(unit, id) do
         local debuffTexture, debuffAmount = UnitDebuff(unit, id)
         if string.find(debuffTexture, texturename) then
-            if (amount
-              or 1) <= debuffAmount then
-                return true
+            if (amount or 1) <= debuffAmount then
+                return true, id
             else
-                return false
+                return false, nil
             end
         end
         id = id + 1
     end
-    return nil
+    return nil, nil
 end
+
+function Waaagh_Print(msg)
+	if not DEFAULT_CHAT_FRAME then 
+		return 
+	end
+
+	-- local strx = string.format(BANANA_PRINT_FORMAT,tostring(msg)); 
+
+	DEFAULT_CHAT_FRAME:AddMessage(tostring(msg));
+end
+
+function GetSlotID(texture_name)
+    local texture
+    local overpower_sid = nil
+    for i=1,120 do
+    texture = GetActionTexture(i)
+        if texture == texture_name then
+        Waaagh_Print(i)
+            return i
+        end
+    end
+end
+
+function HazDebuff(unit, debuffName)
+    local id = 1
+    while pfUI.env.libdebuff:UnitDebuff(unit, id) do
+        local effect, rank, texture, stacks, dtype, duration, timeleft = pfUI.env.libdebuff:UnitDebuff(unit, id)
+        if texture and debuffName and string.find(texture,debuffName) then
+            return stacks, timeleft
+        else
+            return nil, nil
+        end
+        id = id + 1
+    end
+end
+
+
+-- function DebuffTimeLeft(name)
+--     local hasDebuff, id = HasDebuff("target", name)
+--     if hasDebuff then
+--         local effect, rank, texture, stacks, dtype, duration, timeleft = pfUI.env.libdebuff:UnitDebuff("target", debuffID)
+
+--         return timeleft
+
+--     end
+-- end
 
 --------------------------------------------------
 -- Detect if unit has buff
-local function HasBuff(unit, texturename)
+function HasBuff(unit, texturename)
     local id = 1
     while UnitBuff(unit, id) do
         local buffTexture = UnitBuff(unit, id)
@@ -451,7 +497,7 @@ local function HasBuff(unit, texturename)
 end
 --------------------------------------------------
 -- Detect if unit has buff id
-local function HasBuffId(unit, spellId)
+function HasBuffId(unit, spellId)
     for i = 1, 40 do
         if select(11, UnitBuff(unit, i)) == spellid then
             return true
@@ -462,7 +508,7 @@ end
 
 --------------------------------------------------
 -- Use item on player
-local function UseContainerItemByNameOnPlayer(name)
+function UseContainerItemByNameOnPlayer(name)
     for bag = 0, 4 do
         for slot = 1,GetContainerNumSlots(bag) do
             local item = GetContainerItemLink(bag, slot)
@@ -482,7 +528,7 @@ end
 
 --------------------------------------------------
 -- Return active stance
-local function GetActiveStance()
+function GetActiveStance()
     --Detect the active stance
     for i = 1, 3 do
         local _, _, active = GetShapeshiftFormInfo(i)
@@ -495,7 +541,7 @@ end
 
 --------------------------------------------------
 -- Detect if a suitable weapon (not a skinning knife/mining pick and not broken) is present
-local function HasWeapon()
+function HasWeapon()
     if HasDebuff("player", "Ability_Warrior_Disarm") then
         return nil
     end
@@ -514,7 +560,7 @@ end
 
 --------------------------------------------------
 -- Detect if a shield is present
-local function HasShield()
+function HasShield()
     if HasDebuff("player", "Ability_Warrior_Disarm") then
         return nil
     end
@@ -532,7 +578,7 @@ end
 
 --------------------------------------------------
 -- Return trinket slot if trinket is equipped and not on cooldown
-local function IsTrinketEquipped(name)
+function IsTrinketEquipped(name)
     for slot = 13, 14 do
         local item = GetInventoryItemLink("player", slot)
         if item then
@@ -548,7 +594,7 @@ local function IsTrinketEquipped(name)
 end
 --------------------------------------------------
 
-local function Ranged()
+function Ranged()
     --Detect if a ranged weapon is equipped and return type
     local item = GetInventoryItemLink("player", 18)
     if item then
@@ -560,7 +606,7 @@ local function Ranged()
 end
 --------------------------------------------------
 
-local function HamstringCost()
+function HamstringCost()
     -- Calculate the cost of Hamstring based on gear
     local i = 0
     local item = GetInventoryItemLink("player", 10)
@@ -585,7 +631,7 @@ local function HamstringCost()
     return 10 - i
 end
 --------------------------------------------------
-local function CheckDebuffs(unit, list)
+function CheckDebuffs(unit, list)
     for _, v in pairs(list) do
         if HasDebuff(unit, v) then
             return true
@@ -594,7 +640,7 @@ local function CheckDebuffs(unit, list)
     return nil
 end
 --------------------------------------------------
-local function HasAntiStealthDebuff()
+function HasAntiStealthDebuff()
     --Detect anti-stealth debuffs
     --Rend, Deep Wounds, Serpent Sting, Immolate, Curse of Agony , Garrote, Rupture, Deadly Poison, Fireball, Ignite, Pyroblast, Corruption, Siphon Life, Faerie Fire, Moonfire, Rake, Rip, Pounce, Insect Swarm, Holy Fire, Wyvern Sting, Devouring Plague
     return CheckDebuffs("target", {
@@ -624,7 +670,7 @@ local function HasAntiStealthDebuff()
 end
 --------------------------------------------------
 
-local function HasImmobilizingDebuff()
+function HasImmobilizingDebuff()
     return CheckDebuffs("player", {
         "Spell_Frost_FrostNova",
         "spell_Nature_StrangleVines"
@@ -632,7 +678,7 @@ local function HasImmobilizingDebuff()
 end
 --------------------------------------------------
 
-local function SnareDebuff(unit)
+function SnareDebuff(unit)
     -- Detect snaring debuffs
     -- Hamstring, Wing Clip, Curse of Exhaustion, Crippling Poison, Frostbolt, Cone of Cold, Frost Shock, Piercing Howl
     return CheckDebuffs(unit, {
@@ -648,7 +694,7 @@ local function SnareDebuff(unit)
 end
 --------------------------------------------------
 
-local function Waaagh_RunnerDetect(arg1, arg2)
+function Waaagh_RunnerDetect(arg1, arg2)
     -- Thanks to HateMe
     if arg1 == CHAT_RUNNER_WAAAGH then
         Waaagh_Runners[arg2] = true
@@ -657,7 +703,7 @@ local function Waaagh_RunnerDetect(arg1, arg2)
 end
 --------------------------------------------------
 
-local function ItemExists(itemName)
+function ItemExists(itemName)
     for bag = 4, 0, -1 do
         for slot = 1, GetContainerNumSlots(bag) do
             local _, itemCount = GetContainerItemInfo(bag, slot)
@@ -678,7 +724,7 @@ local function ItemExists(itemName)
 end
 --------------------------------------------------
 
-local function IsItemReady(item)
+function IsItemReady(item)
     if ItemExists(item) == false then
         return false
     end
@@ -690,7 +736,7 @@ local function IsItemReady(item)
 end
 --------------------------------------------------
 
-local function IsEquippedAndReady(slot, name)
+function IsEquippedAndReady(slot, name)
     local item = GetInventoryItemLink("player", slot)
     if item then
         local _, _, itemCode = strfind(item, "(%d+):")
@@ -704,7 +750,7 @@ local function IsEquippedAndReady(slot, name)
 end
 --------------------------------------------------
 
-local function CheckCooldown(slot)
+function CheckCooldown(slot)
     local start, duration = GetInventoryItemCooldown("player", slot)
     if duration > 30 then
         -- Alllow duration for 30 seconds since it's when you equip the item
@@ -719,7 +765,7 @@ local function CheckCooldown(slot)
 end
 --------------------------------------------------
 
-local function Waaagh_SetEnemies(count)
+function Waaagh_SetEnemies(count)
     for i = 5, 1, -1 do
         WWEnemies.Hist[i] = WWEnemies.Hist[i - 1]
     end
@@ -727,7 +773,7 @@ local function Waaagh_SetEnemies(count)
 end
 --------------------------------------------------
 
-local function AddEnemyCount(Enemies)
+function AddEnemyCount(Enemies)
     Waaagh_SetEnemies(Enemies)
     Debug("Enemies "..Enemies)
     if Enemies < 2
@@ -738,12 +784,12 @@ local function AddEnemyCount(Enemies)
 end
 --------------------------------------------------
 
-local function Waaagh_GetEnemies()
+function Waaagh_GetEnemies()
     return WWEnemies.Hist[0] or 0
 end
 --------------------------------------------------
 
-local function Waaagh_Shoot()
+function Waaagh_Shoot()
     local ranged_type = Ranged()
     local spell
     if ranged_type == ITEM_TYPE_BOWS_WAAAGH then
@@ -766,7 +812,7 @@ local function Waaagh_Shoot()
 end
 --------------------------------------------------
 -- Treat debuff on player
-local function Waaagh_TreatDebuffPlayer()
+function Waaagh_TreatDebuffPlayer()
     local allowCombatCooldown = true
     if UnitName("target") == BOSS_NAX_LOATHEB_WAAAGH
       or UnitName("target") == BOSS_NAX_SAPPHIRON_WAAAGH then
@@ -1634,7 +1680,7 @@ end
 --
 --------------------------------------------------
 
-local function Waaagh_Block()
+function Waaagh_Block()
     if GetActiveStance() ~= 2 then
         if WaaaghLastStanceCast + 1.5 <= GetTime() then
             if not WaaaghOldStance then
@@ -1666,7 +1712,7 @@ end
 --
 --------------------------------------------------
 
-local function Waaagh_Charge()
+function Waaagh_Charge()
     local dist = Waaagh_Distance()
     if not UnitExists("target") and
       not WaaaghCombat then
@@ -1851,7 +1897,7 @@ end
 
 --------------------------------------------------
 -- Scan spell book and talents
-local function Waaagh_ScanTalents()
+function Waaagh_ScanTalents()
     local i = 1
     Debug("Scanning Spell Book")
     while true do
@@ -2008,7 +2054,7 @@ end
 --
 --------------------------------------------------
 -- Helper to set option to value
-local function SetOptionRange(option, text, value, vmin, vmax)
+function SetOptionRange(option, text, value, vmin, vmax)
     if value ~= "" then
         if tonumber(value) < vmin then
             value = vmin
@@ -2024,7 +2070,7 @@ end
 
 --------------------------------------------------
 -- Print option if it is enabled
-local function PrintEnabledOption(option, text)
+function PrintEnabledOption(option, text)
     if Waaagh_Configuration[option] == true then
         Print(text.." "..TEXT_WAAAGH_ENABLED..".")
     end
@@ -2032,7 +2078,7 @@ end
 
 --------------------------------------------------
 -- Helper to toggle option
-local function ToggleOption(option, text)
+function ToggleOption(option, text)
     if Waaagh_Configuration[option] == true then
         Waaagh_Configuration[option] = false
         Print(text.." "..TEXT_WAAAGH_DISABLED..".")
@@ -2047,7 +2093,7 @@ end
 
 --------------------------------------------------
 -- Help
-local function DoHelp(commands, options)
+function DoHelp(commands, options)
     Print(options)
     if options == nil
       or options == "" then
@@ -2411,7 +2457,7 @@ function Waaagh_OnLoad()
         "PLAYER_REGEN_DISABLED",
         "PLAYER_REGEN_ENABLED",
         "PLAYER_TARGET_CHANGED",
-        "VARIABLES_LOADED",
+        "VARIABLES_LOADED"
     }
     for _, ev in pairs(evs) do
         this:RegisterEvent(ev)
@@ -2430,13 +2476,18 @@ function Waaagh_OnLoad()
     WaaaghRevengeReadyUntil = 0
     FlurryCombatTotal = 0
     WaaaghCombatTotal = 0
-    SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
-    SLASH_WAAAGH1 = "/waaagh"
+    SlashCmdList["WAAAGHZERK"] = Zerk
+    SlashCmdList["WAAAGHTANK"] = Tank
+    SlashCmdList["WAAAGHSHOOT"] = Shoot
+    SLASH_WAAAGHZERK1 = "/waz"
+    SLASH_WAAAGHTANK1 = "/wat"
+    SLASH_WAAAGHSHOOT1 = "/was"
 end
+
 
 --------------------------------------------------
 -- Event handler
-function Waaagh_OnEvent(event)
+function Waaagh_OnEvent(self, event, ...)
 
     if event == "VARIABLES_LOADED" then
         -- Check for settings
@@ -2638,11 +2689,13 @@ function Waaagh_OnEvent(event)
         WaaaghAttack = true
         WaaaghAttackEnd = nil
         WaaaghAttackStart = GetTime()
+        -- Waaagh_Print("hop hop hop - Combat")
         if HasBuff("player", "Ability_GhoulFrenzy") then
             WaaaghFlurryStart = GetTime()
         end
 
     elseif event == "PLAYER_LEAVE_COMBAT" then
+        -- Waaagh_Print("hop hop hop - PasCombat")
         WaaaghAttack = nil
         if WaaaghAttackStart then
             WaaaghAttackEnd = GetTime()
