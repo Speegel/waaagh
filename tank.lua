@@ -3,7 +3,7 @@
 -- Tank - Handles the combat sequence
 
 --------------------------------------------------
-
+ 
 function Tank()
 
     local sunder_stacks, sunder_timeleft = HazDebuff("target","Ability_Warrior_Sunder")
