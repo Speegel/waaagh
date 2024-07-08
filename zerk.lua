@@ -12,34 +12,32 @@ function Zerk()
     end
 
     -- Bloodthirst
-    if WaaaghBloodthirst and UnitMana("player") >= 30 and IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
+    if WaaaghAttack and WaaaghBloodthirst and UnitMana("player") >= 30 and IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
         Debug("23. Bloodthirst")
         CastSpellByName(ABILITY_BLOODTHIRST_WAAAGH)
         -- WaaaghLastSpellCast = GetTime()
     end
 
     -- Whirlwind
-    if UnitMana("player") >= 25 and IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) then
+    if WaaaghAttack and UnitMana("player") >= 25 and IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) then
         CastSpellByName(ABILITY_WHIRLWIND_WAAAGH)
         WWEnemies.WWCount = 0
         WaaaghLastSpellCast = GetTime()
         WWEnemies.WWTime = GetTime()
     end
 
+    if not WaaaghClientSunderCount then WaaaghClientSunderCount = 5 end 
+    -- Sunder Armor (until 5)
+    DoSunder(WaaaghClientSunderCount)
+
     -- Battle Shout
-    if not HasBuff("player", "Ability_Warrior_BattleShout") and UnitMana("player") >= 10 and IsSpellReady(ABILITY_BATTLE_SHOUT_WAAAGH) then
+    if WaaaghAttack and not HasBuff("player", "Ability_Warrior_BattleShout") and UnitMana("player") >= 10 and IsSpellReady(ABILITY_BATTLE_SHOUT_WAAAGH) then
         Debug("28. Battle Shout")
         CastSpellByName(ABILITY_BATTLE_SHOUT_WAAAGH)
         -- WaaaghLastSpellCast = GetTime()
     end
 
-    -- Sunder Armor (until 5)
-    if not HasDebuff("target", "Ability_Warrior_Sunder", 5) and UnitMana("player") >= 15 and IsSpellReady(ABILITY_SUNDER_ARMOR_WAAAGH) then
-        Debug("27. Sunder Armor (not 5)")
-        CastSpellByName(ABILITY_SUNDER_ARMOR_WAAAGH)
-        WaaaghLastSunder = GetTime()
-        -- WaaaghLastSpellCast = GetTime()
-    end
+
 
     -- Bloodrage
     if UnitMana("player") <= 100 and (UnitHealth("player") / UnitHealthMax("player") * 100) >= 25 and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
@@ -54,7 +52,7 @@ function Zerk()
     end
 
     -- Dump rage with Heroic Strike or Cleave
-    if IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) and not IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
+    if not IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) and not IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
         -- Heroic Strike
         if UnitMana("player") >= 45 and IsSpellReady(ABILITY_HEROIC_STRIKE_WAAAGH) then
             Debug("52. Heroic Strike")
