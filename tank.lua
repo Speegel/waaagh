@@ -64,6 +64,9 @@ function Tank()
             -- No global cooldown, added anyway to prevent Heroic Strike from being spammed over other abilities
         end
     end
-        -- Sunder Armor (until 5)
-        DoSunder(5)
+    
+    if not WaaaghClientSunderCount then WaaaghClientSunderCount = 5 end 
+    
+    -- Sunder Armor (until 5)
+    if not UnitIsPlayer("target") then DoSunder(WaaaghClientSunderCount) end
 end

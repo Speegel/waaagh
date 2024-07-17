@@ -436,23 +436,6 @@ function HasDebuff(unit, texturename, amount)
     return nil, nil
 end
 
-function HazDebuff(unit, debuffName)
-    -- local id = 1
-    -- while pfUI.env.libdebuff:UnitDebuff(unit, id) do
-    -- while UnitDebuff(unit, id) do
-    for i = 1,64 do
-        local effect, rank, texture, stacks, dtype, duration, timeleft = pfUI.env.libdebuff:UnitDebuff(unit, i)
-        -- local debuffTexture, debuffAmount = UnitDebuff(unit, id)
-        if texture and string.find(texture,debuffName) then
-            return stacks, duration, timeleft
-        -- else
-        --     return 0, nil
-        end
-        -- id = id + 1
-    end
-    return 0, nil, nil
-end
-
 function Waaagh_Print(msg)
 	if not DEFAULT_CHAT_FRAME then 
 		return 
@@ -2482,6 +2465,10 @@ function Waaagh_OnLoad()
     SlashCmdList["WAAAGHZERK"] = Zerk
     SlashCmdList["WAAAGHTANK"] = Tank
     SlashCmdList["WAAAGHSHOOT"] = Shoot
+    SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
+    SlashCmdList["WAAAGHKICK"] = Waagh_Kick
+    SLASH_WAAAGH1 = "/waaagh"
+    SLASH_WAAAGHKICK1 = "/wak"
     SLASH_WAAAGHZERK1 = "/waz"
     SLASH_WAAAGHTANK1 = "/wat"
     SLASH_WAAAGHSHOOT1 = "/was"

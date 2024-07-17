@@ -4,7 +4,7 @@
 
 --------------------------------------------------
 
-function Zerk()
+function Zerk_Multi()
     DoShapeShift(3)
     
     local sunder_stacks, sunder_duration, sunder_timeleft = HazDebuff("target","Ability_Warrior_Sunder")
@@ -61,22 +61,6 @@ function Zerk()
             end
             return
         end
-        -- if WaaaghLastSunder then 
-        --     if ( GetTime() - WaaaghLastSunder ) >= 24 and ( GetTime() - WaaaghLastSunder ) <= 30 then
-        --         SendChatMessage("Sunder Armor on [ %t ] is timing out in less than 5 sec --> renew","RAID",nil)
-        --         CastSpellByName(ABILITY_SUNDER_ARMOR_WAAAGH)
-        --         return
-        --     elseif ( GetTime() - WaaaghLastSunder ) > 0 and ( GetTime() - WaaaghLastSunder ) < 24 then
-        --         -- do nothing 
-        --     else
-        --         WaaaghLastSunder = nil
-        --     end
-        -- else
-        --     -- SendChatMessage("Sunder on [ %t ] is 5 - Timing out in "..sunder_timeleft,"RAID",nil)
-        --     -- CastSpellByName(ABILITY_SUNDER_ARMOR_WAAAGH)
-        --     WaaaghLastSunder = GetTime()
-        --     return
-        -- end
     end
 
     -- Bloodrage

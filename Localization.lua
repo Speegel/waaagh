@@ -152,6 +152,18 @@ ITEM_DEBUFF_TYPE_DISEASE = "Disease"
 ITEM_DEBUFF_TYPE_CURSE   = "Curse"
 ITEM_DEBUFF_TYPE_MAGIC   = "Magic"
 
+ITEM_CONS_ELIXIR_OF_THE_MONGOOSE       = "Elixir of the Mongoose"
+ITEM_ICON_ELIXIR_OF_THE_MONGOOSE       = "INV_Potion_32"
+
+ITEM_CONS_ELIXIR_OF_FORTITUDE          = "Elixir of Fortitude"
+ITEM_ICON_ELIXIR_OF_FORTITUDE          = "INV_Potion_43"
+
+ITEM_CONS_ELIXIR_OF_GREATER_DEFENSE    = "Elixir of Greater Defense"
+ITEM_ICON_ELIXIR_OF_GREATER_DEFENSE    = "INV_Potion_65"
+
+ITEM_CONS_WINTERFALL_FIREWATER         = "Winterfall Firewater"
+ITEM_ICON_WINTERFALL_FIREWATER         = "INV_Potion_92"
+
 ITEM_CONS_JUJU_FLURRY                  = "Juju Flurry"
 ITEM_CONS_JUJU_POWER                   = "Juju Power"
 ITEM_CONS_JUJU_MIGHT                   = "Juju Might"

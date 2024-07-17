@@ -18,6 +18,12 @@ function Zerk()
         -- WaaaghLastSpellCast = GetTime()
     end
 
+    if WaaaghAttack and WaaaghMortalStrike and UnitMana("player") >= 30 and IsSpellReady(ABILITY_MORTAL_STRIKE_WAAAGH) then
+        Debug("23. Bloodthirst")
+        CastSpellByName(ABILITY_MORTAL_STRIKE_WAAAGH)
+        -- WaaaghLastSpellCast = GetTime()
+    end
+
     -- Whirlwind
     if WaaaghAttack and UnitMana("player") >= 25 and IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) then
         CastSpellByName(ABILITY_WHIRLWIND_WAAAGH)
@@ -28,7 +34,7 @@ function Zerk()
 
     if not WaaaghClientSunderCount then WaaaghClientSunderCount = 5 end 
     -- Sunder Armor (until 5)
-    DoSunder(WaaaghClientSunderCount)
+    if not UnitIsPlayer("target") then DoSunder(WaaaghClientSunderCount) end
 
     -- Battle Shout
     if WaaaghAttack and not HasBuff("player", "Ability_Warrior_BattleShout") and UnitMana("player") >= 10 and IsSpellReady(ABILITY_BATTLE_SHOUT_WAAAGH) then
@@ -36,8 +42,6 @@ function Zerk()
         CastSpellByName(ABILITY_BATTLE_SHOUT_WAAAGH)
         -- WaaaghLastSpellCast = GetTime()
     end
-
-
 
     -- Bloodrage
     if UnitMana("player") <= 100 and (UnitHealth("player") / UnitHealthMax("player") * 100) >= 25 and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
