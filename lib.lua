@@ -24,6 +24,7 @@ function DoUpdateConfiguration(defaults)
       {"NextAttackRage", 30},     -- Set this to the minimum rage to have to use next attack abilities (Cleave and Heroic Strike)
       {"StanceChangeRage", 25},   -- Set this to the amount of rage allowed to be wasted when switching stances
       {"PrimaryStance", false},   -- Set this to the stance to fall back to after performing an attack requiring another stance
+      {"SunderCount", 5},
 
       {MODE_HEADER_PROT, false },              -- Use threat and defensive abilities
       {MODE_HEADER_AOE, false},                -- Disable auto use of aoe (Disables OP, HS, BT, Exe, Enablse Cleave, Whirlwind)
@@ -42,6 +43,7 @@ function DoUpdateConfiguration(defaults)
       {ABILITY_PIERCING_HOWL_WAAAGH, true},      -- Piercing Howl
       {ABILITY_HEROIC_STRIKE_WAAAGH, true},      -- HS, to dump rage and at low levels
       {ABILITY_INTERCEPT_WAAAGH, true},          -- in combat charge
+      {ABILITY_INTERVENE_WAAAGH, true},          -- in combat charge
       {ABILITY_MORTAL_STRIKE_WAAAGH, true},      -- Arms main attack
       {ABILITY_SWEEPING_STRIKES_WAAAGH, true},   -- Aoe for arms
       {ABILITY_OVERPOWER_WAAAGH, true},          -- Counterattack dodge
@@ -288,7 +290,8 @@ function Waaagh_InitDistance()
             end
             if not yard25 then
                 if string.find(t, "Ability_Warrior_Charge") -- Charge
-                  or string.find(t, "Ability_Rogue_Sprint") then -- Intercept
+                  or string.find(t, "Ability_Rogue_Sprint") -- Intercept
+                  or string.find(t, "Ability_Warrior_Intervene") then -- Intervene
                     yard25 = i
                     Debug("25 yard: "..t)
                     found = found + 1
@@ -416,7 +419,7 @@ end
 -- Return if spell is ready
 function IsSpellReady(spellname)
     return IsSpellReadyIn(spellname) == 0
- end
+end
 
 --------------------------------------------------
 -- Detect if unit has specific number of debuffs
@@ -458,16 +461,6 @@ function GetSlotID(texture_name)
     end
 end
 
--- function DebuffTimeLeft(name)
---     local hasDebuff, id = HasDebuff("target", name)
---     if hasDebuff then
---         local effect, rank, texture, stacks, dtype, duration, timeleft = pfUI.env.libdebuff:UnitDebuff("target", debuffID)
-
---         return timeleft
-
---     end
--- end
-
 --------------------------------------------------
 -- Detect if unit has buff
 function HasBuff(unit, texturename)
@@ -481,6 +474,7 @@ function HasBuff(unit, texturename)
     end
     return nil
 end
+
 --------------------------------------------------
 -- Detect if unit has buff id
 function HasBuffId(unit, spellId)
@@ -1698,188 +1692,188 @@ end
 --
 --------------------------------------------------
 
-function Waaagh_Charge()
-    local dist = Waaagh_Distance()
-    if not UnitExists("target") and
-      not WaaaghCombat then
-        if Waaagh_Configuration["PrimaryStance"]
-           and Waaagh_Configuration["PrimaryStance"] ~= 0
-           and GetActiveStance() ~= Waaagh_Configuration["PrimaryStance"] then
-            DoShapeShift(Waaagh_Configuration["PrimaryStance"])
-        end
-        Debug("No target")
-        return
-    end
-    if WaaaghMount
-      and dist <= 25 then
-        -- Dismount as a first step
-        Debug("Dismounting")
-        Dismount()
-        WaaaghMount = nil
-    end
-    if WaaaghCombat then
-        if Waaagh_Configuration["AutoAttack"]
-          and not WaaaghAttack then
-            -- Auto attack closest target
-            AttackTarget()
-        end
-        if Waaagh_Configuration[ABILITY_THUNDER_CLAP_WAAAGH]
-          and WaaaghLastChargeCast + 0.6 <= GetTime()
-          and dist <= 7
-          and not SnareDebuff("target")
-          and UnitMana("player") >= WaaaghThunderClapCost
-          and IsSpellReady(ABILITY_THUNDER_CLAP_WAAAGH) then
-            if GetActiveStance() ~= 1 then
-                if WaaaghOldStance == nil then
-                    WaaaghOldStance = GetActiveStance()
-                end
-                Debug("C1.Arms Stance, Thunder Clap")
-                DoShapeShift(1)
-            else
-                Debug("C1.Thunder Clap")
-                if WaaaghOldStance == 1 then
-                    WaaaghDanceDone = true
-                end
-                CastSpellByName(ABILITY_THUNDER_CLAP_WAAAGH)
-                WaaaghLastSpellCast = GetTime()
-            end
+-- function Waaagh_Charge()
+--     local dist = Waaagh_Distance()
+--     if not UnitExists("target") and
+--       not WaaaghCombat then
+--         if Waaagh_Configuration["PrimaryStance"]
+--            and Waaagh_Configuration["PrimaryStance"] ~= 0
+--            and GetActiveStance() ~= Waaagh_Configuration["PrimaryStance"] then
+--             DoShapeShift(Waaagh_Configuration["PrimaryStance"])
+--         end
+--         Debug("No target")
+--         return
+--     end
+--     if WaaaghMount
+--       and dist <= 25 then
+--         -- Dismount as a first step
+--         Debug("Dismounting")
+--         Dismount()
+--         WaaaghMount = nil
+--     end
+--     if WaaaghCombat then
+--         if Waaagh_Configuration["AutoAttack"]
+--           and not WaaaghAttack then
+--             -- Auto attack closest target
+--             AttackTarget()
+--         end
+--         if Waaagh_Configuration[ABILITY_THUNDER_CLAP_WAAAGH]
+--           and WaaaghLastChargeCast + 0.6 <= GetTime()
+--           and dist <= 7
+--           and not SnareDebuff("target")
+--           and UnitMana("player") >= WaaaghThunderClapCost
+--           and IsSpellReady(ABILITY_THUNDER_CLAP_WAAAGH) then
+--             if GetActiveStance() ~= 1 then
+--                 if WaaaghOldStance == nil then
+--                     WaaaghOldStance = GetActiveStance()
+--                 end
+--                 Debug("C1.Arms Stance, Thunder Clap")
+--                 DoShapeShift(1)
+--             else
+--                 Debug("C1.Thunder Clap")
+--                 if WaaaghOldStance == 1 then
+--                     WaaaghDanceDone = true
+--                 end
+--                 CastSpellByName(ABILITY_THUNDER_CLAP_WAAAGH)
+--                 WaaaghLastSpellCast = GetTime()
+--             end
 
-        elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
-          and GetActiveStance() == 3
-          and dist <= 25
-          and dist > 7
-          and UnitMana("player") >= 10
-          and WaaaghLastChargeCast + 1 < GetTime()
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
-            Debug("C2. Intercept")
-            CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
-            WaaaghLastChargeCast = GetTime()
+--         elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
+--           and GetActiveStance() == 3
+--           and dist <= 25
+--           and dist > 7
+--           and UnitMana("player") >= 10
+--           and WaaaghLastChargeCast + 1 < GetTime()
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
+--             Debug("C2. Intercept")
+--             CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
+--             WaaaghLastChargeCast = GetTime()
 
-        elseif Waaagh_Configuration[ABILITY_BLOODRAGE_WAAAGH]
-          and GetActiveStance() == 3
-          and UnitMana("player") < 10
-          and dist <= 25
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
-          and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
-            Debug("C3. Bloodrage")
-            CastSpellByName(ABILITY_BLOODRAGE_WAAAGH)
+--         elseif Waaagh_Configuration[ABILITY_BLOODRAGE_WAAAGH]
+--           and GetActiveStance() == 3
+--           and UnitMana("player") < 10
+--           and dist <= 25
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
+--           and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
+--             Debug("C3. Bloodrage")
+--             CastSpellByName(ABILITY_BLOODRAGE_WAAAGH)
 
-        elseif Waaagh_Configuration[ABILITY_BERSERKER_RAGE_WAAAGH]
-          and WaaaghBerserkerRage
-          and GetActiveStance() == 3
-          and UnitMana("player") < 10
-          and not IsSpellReady(ABILITY_BLOODRAGE_WAAAGH)
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
-          and IsSpellReady(ABILITY_BERSERKER_RAGE_WAAAGH) then
-            Debug("C4. Berserker Rage")
-            CastSpellByName(ABILITY_BERSERKER_RAGE_WAAAGH)
+--         elseif Waaagh_Configuration[ABILITY_BERSERKER_RAGE_WAAAGH]
+--           and WaaaghBerserkerRage
+--           and GetActiveStance() == 3
+--           and UnitMana("player") < 10
+--           and not IsSpellReady(ABILITY_BLOODRAGE_WAAAGH)
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
+--           and IsSpellReady(ABILITY_BERSERKER_RAGE_WAAAGH) then
+--             Debug("C4. Berserker Rage")
+--             CastSpellByName(ABILITY_BERSERKER_RAGE_WAAAGH)
 
-        elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
-          and GetActiveStance() ~= 3
-          and UnitMana("player") >= 10
-          and WaaaghLastChargeCast + 1 < GetTime()
-          and IsSpellReadyIn(ABILITY_INTERCEPT_WAAAGH) <= 3 then
-            Debug("C5. Berserker Stance (Intercept)")
-            if WaaaghOldStance == nil then
-                WaaaghOldStance = GetActiveStance()
-            elseif WaaaghOldStance == 3 then
-                WaaaghDanceDone = true
-            end
-            DoShapeShift(3)
+--         elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
+--           and GetActiveStance() ~= 3
+--           and UnitMana("player") >= 10
+--           and WaaaghLastChargeCast + 1 < GetTime()
+--           and IsSpellReadyIn(ABILITY_INTERCEPT_WAAAGH) <= 3 then
+--             Debug("C5. Berserker Stance (Intercept)")
+--             if WaaaghOldStance == nil then
+--                 WaaaghOldStance = GetActiveStance()
+--             elseif WaaaghOldStance == 3 then
+--                 WaaaghDanceDone = true
+--             end
+--             DoShapeShift(3)
 
-        end
-    else
-        if Waaagh_Configuration[ABILITY_CHARGE_WAAAGH]
-          and GetActiveStance() == 1
-          and dist <= 25
-          and dist > 7
-          and WaaaghLastChargeCast + 0.5 < GetTime()
-          and IsSpellReady(ABILITY_CHARGE_WAAAGH) then
-            Debug("O1. Charge")
-            CastSpellByName(ABILITY_CHARGE_WAAAGH)
-            WaaaghLastChargeCast = GetTime()
+--         end
+--     else
+--         if Waaagh_Configuration[ABILITY_CHARGE_WAAAGH]
+--           and GetActiveStance() == 1
+--           and dist <= 25
+--           and dist > 7
+--           and WaaaghLastChargeCast + 0.5 < GetTime()
+--           and IsSpellReady(ABILITY_CHARGE_WAAAGH) then
+--             Debug("O1. Charge")
+--             CastSpellByName(ABILITY_CHARGE_WAAAGH)
+--             WaaaghLastChargeCast = GetTime()
 
-        elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
-          and GetActiveStance() == 3
-          and dist <= 25
-          and dist > 7
-          and UnitMana("player") >= 10
-          and WaaaghLastChargeCast + 2 < GetTime()
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
-            Debug("O2. Intercept")
-            CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
-            WaaaghLastChargeCast = GetTime()
-            WaaaghLastSpellCast = GetTime()
+--         elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
+--           and GetActiveStance() == 3
+--           and dist <= 25
+--           and dist > 7
+--           and UnitMana("player") >= 10
+--           and WaaaghLastChargeCast + 2 < GetTime()
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
+--             Debug("O2. Intercept")
+--             CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
+--             WaaaghLastChargeCast = GetTime()
+--             WaaaghLastSpellCast = GetTime()
 
-        elseif Waaagh_Configuration[ABILITY_THUNDER_CLAP_WAAAGH]
-          and GetActiveStance() == 1
-          and dist <= 5
-          and not SnareDebuff("target")
-          and UnitMana("player") >= WaaaghThunderClapCost
-          and IsSpellReady(ABILITY_THUNDER_CLAP_WAAAGH) then
-            Debug("O3. Thunder Clap")
-            CastSpellByName(ABILITY_THUNDER_CLAP_WAAAGH)
-            WaaaghLastSpellCast = GetTime()
+--         elseif Waaagh_Configuration[ABILITY_THUNDER_CLAP_WAAAGH]
+--           and GetActiveStance() == 1
+--           and dist <= 5
+--           and not SnareDebuff("target")
+--           and UnitMana("player") >= WaaaghThunderClapCost
+--           and IsSpellReady(ABILITY_THUNDER_CLAP_WAAAGH) then
+--             Debug("O3. Thunder Clap")
+--             CastSpellByName(ABILITY_THUNDER_CLAP_WAAAGH)
+--             WaaaghLastSpellCast = GetTime()
 
-        elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
-          and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
-          and UnitMana("player") >= 10
-          and WaaaghBerserkerStance
-          and WaaaghLastChargeCast + 1 < GetTime()
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
-            if GetActiveStance() ~= 3 then
-                Debug("Berserker Stance (Intercept)")
-                if WaaaghOldStance == nil then
-                    WaaaghOldStance = GetActiveStance()
-                end
-                DoShapeShift(3)
+--         elseif Waaagh_Configuration[ABILITY_INTERCEPT_WAAAGH]
+--           and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
+--           and UnitMana("player") >= 10
+--           and WaaaghBerserkerStance
+--           and WaaaghLastChargeCast + 1 < GetTime()
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH) then
+--             if GetActiveStance() ~= 3 then
+--                 Debug("Berserker Stance (Intercept)")
+--                 if WaaaghOldStance == nil then
+--                     WaaaghOldStance = GetActiveStance()
+--                 end
+--                 DoShapeShift(3)
 
-            else
-                if WaaaghOldStance == 3 then
-                    WaaaghDanceDone = true
-                end
-                CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
-                WaaaghLastSpellCast = GetTime()
-            end
+--             else
+--                 if WaaaghOldStance == 3 then
+--                     WaaaghDanceDone = true
+--                 end
+--                 CastSpellByName(ABILITY_INTERCEPT_WAAAGH)
+--                 WaaaghLastSpellCast = GetTime()
+--             end
 
-        elseif Waaagh_Configuration[ABILITY_BERSERKER_RAGE_WAAAGH]
-          and WaaaghBerserkerRage
-          and GetActiveStance() == 3
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
-          and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
-          and dist <= 25
-          and UnitMana("player") < 10
-          and not IsSpellReady(ABILITY_BLOODRAGE_WAAAGH)
-          and IsSpellReady(ABILITY_BERSERKER_RAGE_WAAAGH) then
-            Debug("O5. Berserker Rage")
-            CastSpellByName(ABILITY_BERSERKER_RAGE_WAAAGH)
+--         elseif Waaagh_Configuration[ABILITY_BERSERKER_RAGE_WAAAGH]
+--           and WaaaghBerserkerRage
+--           and GetActiveStance() == 3
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
+--           and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
+--           and dist <= 25
+--           and UnitMana("player") < 10
+--           and not IsSpellReady(ABILITY_BLOODRAGE_WAAAGH)
+--           and IsSpellReady(ABILITY_BERSERKER_RAGE_WAAAGH) then
+--             Debug("O5. Berserker Rage")
+--             CastSpellByName(ABILITY_BERSERKER_RAGE_WAAAGH)
 
-        elseif Waaagh_Configuration[ABILITY_BLOODRAGE_WAAAGH]
-          and GetActiveStance() == 3
-          and dist <= 25
-          and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
-          and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
-          and UnitMana("player") < 10
-          and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
-            Debug("O6. Bloodrage")
-            CastSpellByName(ABILITY_BLOODRAGE_WAAAGH)
+--         elseif Waaagh_Configuration[ABILITY_BLOODRAGE_WAAAGH]
+--           and GetActiveStance() == 3
+--           and dist <= 25
+--           and IsSpellReady(ABILITY_INTERCEPT_WAAAGH)
+--           and not IsSpellReady(ABILITY_CHARGE_WAAAGH)
+--           and UnitMana("player") < 10
+--           and IsSpellReady(ABILITY_BLOODRAGE_WAAAGH) then
+--             Debug("O6. Bloodrage")
+--             CastSpellByName(ABILITY_BLOODRAGE_WAAAGH)
 
-        elseif Waaagh_Configuration[ABILITY_CHARGE_WAAAGH]
-          and GetActiveStance() ~= 1
-          and dist > 7
-          and IsSpellReadyIn(ABILITY_CHARGE_WAAAGH) <= 5 then
-            Debug("O7. Arm Stance (Charge)")
-            if Waaagh_Configuration["PrimaryStance"] ~= 1
-              and WaaaghOldStance == nil then
-                WaaaghOldStance = GetActiveStance()
-            elseif WaaaghOldstance == 1 then
-                WaaaghOldStance = nil
-                WaaaghDanceDone = true
-            end
-            DoShapeShift(1)
-        end
-    end
-end
+--         elseif Waaagh_Configuration[ABILITY_CHARGE_WAAAGH]
+--           and GetActiveStance() ~= 1
+--           and dist > 7
+--           and IsSpellReadyIn(ABILITY_CHARGE_WAAAGH) <= 5 then
+--             Debug("O7. Arm Stance (Charge)")
+--             if Waaagh_Configuration["PrimaryStance"] ~= 1
+--               and WaaaghOldStance == nil then
+--                 WaaaghOldStance = GetActiveStance()
+--             elseif WaaaghOldstance == 1 then
+--                 WaaaghOldStance = nil
+--                 WaaaghDanceDone = true
+--             end
+--             DoShapeShift(1)
+--         end
+--     end
+-- end
 
 --------------------------------------------------
 -- Scan spell book and talents
@@ -2252,6 +2246,10 @@ function Waaagh_SlashCommand(msg)
                 SetOptionRange("FlurryTriggerRage", SLASH_WAAAGH_FLURRYTRIGGER, options, 0, 100)
             end },
 
+        ["sundercount"] = { help = HELP_SUNDERCOUNT, fn = function(options)
+                SetOptionRange("SunderCount", SLASH_WAAAGH_SUNDER, options, 0, 5)
+            end },
+
         ["hamstring"] = { help = HELP_HAMSTRING, fn = function(options)
                 SetOptionRange("HamstringHealth", SLASH_WAAAGH_HAMSTRING, options, 1, 100)
             end },
@@ -2478,7 +2476,7 @@ end
 --------------------------------------------------
 -- Event handler
 function Waaagh_OnEvent(self, event, ...)
-
+    
     if event == "VARIABLES_LOADED" then
         -- Check for settings
         Waaagh_Configuration_Init()
@@ -2512,14 +2510,46 @@ function Waaagh_OnEvent(self, event, ...)
             end
         end
 
-    elseif event == "CHAT_MSG_SPELL_SELF_DAMAGE"
-      and string.find(arg1, CHAT_INTERRUPT1_WAAAGH)
-      or event == "CHAT_MSG_COMBAT_SELF_MISSES"
-      and (string.find(arg1, CHAT_INTERRUPT2_WAAAGH)
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_HITS_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_HITS_WAAAGH)) then
+            -- SendChatMessage("Interrupt SUCCESS on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt SUCCESS on [ %t ]")
+
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_CRITS_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_CRITS_WAAAGH)) then
+            -- SendChatMessage("Interrupt SUCCESS [ Critical ] on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt SUCCESS [ Critical ] on [ %t ]")
+
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_PARRY_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_PARRY_WAAAGH)) then
+            -- SendChatMessage("Interrupt FAILED [ Parried ] on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt FAILED [ Parried ] on [ %t ]")
+
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_BLOCKED_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_BLOCKED_WAAAGH)) then
+            -- SendChatMessage("Interrupt FAILED [ Blocked ] on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt FAILED [ Blocked ] on [ %t ]")
+            
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_MISS_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_MISS_WAAAGH)) then
+            -- SendChatMessage("Interrupt FAILED  [ Missed ] on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt FAILED  [ Missed ] on [ %t ]")
+            
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" 
+            or event == "CHAT_MSG_COMBAT_SELF_MISSES" 
+            or event == "CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF"
+            or event == "CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES")
+        and (string.find(arg1, CHAT_PUMMEL_DODGED_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_DODGED_WAAAGH)) then
+            -- SendChatMessage("Interrupt FAILED [ Dodged ] on [ %t ]" ,message_chat_type , nil) 
+            pfUI.api.SendChatMessageWide("Interrupt FAILED [ Dodged ] on [ %t ]")
+            
+    elseif event == "CHAT_MSG_COMBAT_SELF_MISSES"
+      and (string.find(arg1, CHAT_INTERRUPT2_WAAAGH) 
       or string.find(arg1, CHAT_INTERRUPT3_WAAAGH)
       or string.find(arg1, CHAT_INTERRUPT4_WAAAGH)
       or string.find(arg1, CHAT_INTERRUPT5_WAAAGH)) then
         -- Check to see if Pummel/Shield Bash is used
+        SendChatMessage("Interrupt FAILED on [ %t ]" ,message_chat_type , nil) 
         WaaaghSpellInterrupt = nil
 
     elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE"

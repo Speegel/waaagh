@@ -4,14 +4,14 @@
 
 --------------------------------------------------
 
-function Zerk_Multi()
+function Zerk_Solo()
 
     Zerk_Base()
 
     -- Sunder Armor (until SunderCount)
     if not UnitIsPlayer("target") then DoSunder(Waaagh_Configuration["SunderCount"]) end
 
-    Waaagh_Shouts()
+    Waaagh_Shouts() 
 
     -- Shield Block
     if HasShield() and WaaaghCombat and (UnitName("targettarget") == UnitName("player")) and UnitMana("player") >= 10 and IsSpellReady(ABILITY_SHIELD_BLOCK_WAAAGH) then
@@ -19,12 +19,14 @@ function Zerk_Multi()
         CastSpellByName(ABILITY_SHIELD_BLOCK_WAAAGH)
     end
 
-    -- Dump rage with Cleave
-    if not IsSpellReady(ABILITY_WHIRLWIND_WAAAGH) and not IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
-        -- Cleave
-        if UnitMana("player") >= 45 and IsSpellReady(ABILITY_CLEAVE_FURY) then
+    -- Dump rage with Heroic Strike or Cleave
+    if not IsSpellReady(ABILITY_BLOODTHIRST_WAAAGH) then
+        -- Heroic Strike
+        if UnitMana("player") >= 45 and IsSpellReady(ABILITY_HEROIC_STRIKE_WAAAGH) then
             Debug("52. Heroic Strike")
-            CastSpellByName(ABILITY_CLEAVE_FURY)
+            CastSpellByName(ABILITY_HEROIC_STRIKE_WAAAGH)
+            -- WaaaghLastSpellCast = GetTime()
+            -- No global cooldown, added anyway to prevent Heroic Strike from being spammed over other abilities
         end
     end
 end
