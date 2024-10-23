@@ -2432,6 +2432,7 @@ function Waaagh_OnLoad()
         "CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF",
         "CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE",
         "CHAT_MSG_SPELL_PERIODIC_SELF_DAMAGE",
+        "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE",
         "CHAT_MSG_SPELL_SELF_DAMAGE",
         "PLAYER_AURAS_CHANGED",
         "PLAYER_ENTER_COMBAT",
@@ -2535,10 +2536,7 @@ function Waaagh_OnEvent(self, event, ...)
             -- SendChatMessage("Interrupt FAILED  [ Missed ] on [ %t ]" ,message_chat_type , nil) 
             pfUI.api.SendChatMessageWide("Interrupt FAILED  [ Missed ] on [ %t ]")
             
-    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" 
-            or event == "CHAT_MSG_COMBAT_SELF_MISSES" 
-            or event == "CHAT_MSG_SPELL_DAMAGESHIELDS_ON_SELF"
-            or event == "CHAT_MSG_COMBAT_CREATURE_VS_SELF_MISSES")
+    elseif (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE")
         and (string.find(arg1, CHAT_PUMMEL_DODGED_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_DODGED_WAAAGH)) then
             -- SendChatMessage("Interrupt FAILED [ Dodged ] on [ %t ]" ,message_chat_type , nil) 
             pfUI.api.SendChatMessageWide("Interrupt FAILED [ Dodged ] on [ %t ]")
