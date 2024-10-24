@@ -59,6 +59,7 @@ function Waagh_Kick()
             Debug("14. Battle Stance (Shield Bash)")
             DoShapeShift(2)
             CastSpellByName(ABILITY_SHIELD_BASH_FURY)
+            
         else
             Debug("14. Shield Bash (interrupt)")
         end

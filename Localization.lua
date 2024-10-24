@@ -102,6 +102,7 @@ CHAT_SHIELBASH_CRITS_WAAAGH     = "Your Shield Bash crits (.+) for (.+)"
 CHAT_SHIELBASH_MISS_WAAAGH      = "Your Shield Bash missed (.+)"
 CHAT_SHIELBASH_PARRY_WAAAGH     = "Your Shield Bash is parried by (.+)"
 CHAT_SHIELBASH_BLOCKED_WAAAGH   = "Your Shield Bash was blocked by (.+)"
+-- CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 
 CHAT_INTERRUPT2_WAAAGH          = "Your Pummel was (.+) by (.+)."
