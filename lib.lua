@@ -25,6 +25,7 @@ function DoUpdateConfiguration(defaults)
         { "StanceChangeRage",                25 }, -- Set this to the amount of rage allowed to be wasted when switching stances
         { "PrimaryStance",                   false }, -- Set this to the stance to fall back to after performing an attack requiring another stance
         { "SunderCount",                     5 },
+        { "OnRazuvious",                     false },
 
         { MODE_HEADER_PROT,                  false }, -- Use threat and defensive abilities
         { MODE_HEADER_AOE,                   false }, -- Disable auto use of aoe (Disables OP, HS, BT, Exe, Enablse Cleave, Whirlwind)
@@ -398,15 +399,17 @@ end
 -- Check remaining cooldown on spell (0 - Ready)
 function IsSpellReadyIn(spellname)
     local id = SpellId(spellname)
+    -- Debug("id : " .. id )
     if id then
         local start, duration = GetSpellCooldown(id, 0)
         if start == 0
-            and duration == 0
-            and WaaaghLastSpellCast + 1 <= GetTime() then
+            and duration == 0 then
+                -- Debug("spell " .. spellname .." is ready")
             return 0
         end
         local remaining = duration - (GetTime() - start)
         if remaining >= 0 then
+            -- Debug("spell " .. spellname .." is ready in " .. remaining .. " seconds")
             return remaining
         end
     end
@@ -449,7 +452,6 @@ end
 
 function GetSlotID(texture_name)
     local texture
-    local overpower_sid = nil
     for i = 1, 120 do
         texture = GetActionTexture(i)
         if texture == texture_name then
@@ -471,6 +473,25 @@ function HasBuff(unit, texturename)
         id = id + 1
     end
     return nil
+end
+
+-- [ UnitHasBuff ]
+-- Returns whether a unit has the given buff or not.
+-- unit         [string]        A unit to query (string, unitID)
+-- buff         [string]        The texture of the buff.
+-- return:      [bool]          true if unit has buff otherwise "nil"
+function UnitHasBuff(unit, buff)
+    
+    local hasbuff = nil
+
+    for i = 1, 64 do
+      if UnitBuff(unit, i) == buff then
+        hasbuff = true
+        break
+      end
+    end
+  
+    return hasbuff
 end
 
 --------------------------------------------------
