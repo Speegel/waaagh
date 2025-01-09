@@ -1,8 +1,8 @@
 ## Interface: 11200
 ## Title: Waaagh
-## Notes: To make Warrior combat easier.
-## Author: CubeNicke (Orig. Bhaerau)
-## eMail: cubenicke@gmail.com (Orig bhaerau@gmail.com)
+## Notes: Make Spiegel spam less buttons
+## Author: Spiegel
+## Version: 1.0.1
 ## DefaultState: enabled
 ## SavedVariables: Waaagh_Configuration, Waaagh_Runners, Waaagh_ImmuneDisarm
 ## OptionalDeps: IsMounted, Outfitter, pfUI, ShaguTweaks, SuperMacro, MikScrollingBattleText

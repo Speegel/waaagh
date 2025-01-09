@@ -19,10 +19,8 @@ function Berserker(mode)
     if GetActiveStance() ~= 3 then DoShapeShift(3) end
 
     -- 1, Auto attack closest target
-    if Waaagh_Configuration["AutoAttack"] and not WaaaghAttack then
-        Debug("01. Berserker : Enable AttackTarget")
+    if not WaaaghAttack then
         AttackTarget()
-        return
     end
 
     Waaagh_Shouts()
@@ -32,11 +30,6 @@ function Berserker(mode)
         Debug("32. Shield Block")
         CastSpellByName(ABILITY_SHIELD_BLOCK_WAAAGH)
         return
-    end
-
-    -- Sunder Armor (until SunderCount)
-    if not UnitIsPlayer("target") then 
-        DoSunder(Waaagh_Configuration["SunderCount"]) 
     end
 
     if mode == "multi" then
@@ -49,7 +42,6 @@ function Berserker(mode)
     end
 
     -- Bloodthirst
-    -- Debug("bfore BT : " .. tostring(IsBloodthirstReady))
     if WaaaghAttack and UnitMana("player") >= 30 and IsBloodthirstReady then
         Debug("02. Berserker : Bloodthirst")
         CastSpellByName(ABILITY_BLOODTHIRST_WAAAGH)
@@ -64,6 +56,11 @@ function Berserker(mode)
             CastSpellByName(ABILITY_WHIRLWIND_WAAAGH)
             return
         end
+    end
+
+    -- Sunder Armor (until SunderCount)
+    if not UnitIsPlayer("target") then
+        DoSunder(Waaagh_Configuration["SunderCount"])
     end
 
     if mode == "mono" then
@@ -94,4 +91,5 @@ function Berserker(mode)
             end
         end
     end
+
 end

@@ -25,7 +25,8 @@ function DoUpdateConfiguration(defaults)
         { "StanceChangeRage",                25 }, -- Set this to the amount of rage allowed to be wasted when switching stances
         { "PrimaryStance",                   false }, -- Set this to the stance to fall back to after performing an attack requiring another stance
         { "SunderCount",                     5 },
-        { "OnRazuvious",                     false },
+        { "raz",                     false },
+        { "dp",                        false },
 
         { MODE_HEADER_PROT,                  false }, -- Use threat and defensive abilities
         { MODE_HEADER_AOE,                   false }, -- Disable auto use of aoe (Disables OP, HS, BT, Exe, Enablse Cleave, Whirlwind)
@@ -2126,6 +2127,21 @@ function Waaagh_SlashCommand(msg)
             end
         },
 
+        ["raz"] = {
+            help = HELP_EXECUTESWAP,
+            fn = function(options)
+                ToggleOption("raz", "raz")
+            end
+        },
+
+        ["dp"] = {
+            help = HELP_EXECUTESWAP,
+            fn = function(options)
+                Debug("value : " .. tostring(Waaagh_Configuration["dp"]))
+                ToggleOption("dp", "deep prot")
+            end
+        },
+
         ["flurrytrigger"] = {
             help = HELP_FLURRYTRIGGER,
             fn = function(options)
@@ -2402,6 +2418,7 @@ function Waaagh_OnLoad()
     WaaaghRevengeTime = 0
     WaaaghLastChargeCast = 0
     WaaaghRevengeReadyUntil = 0
+    WaaaghLastBattleShoutCast = GetTime() - 110
     FlurryCombatTotal = 0
     WaaaghCombatTotal = 0
     SlashCmdList["WAAAGHZERK"] = Zerk
@@ -2410,6 +2427,7 @@ function Waaagh_OnLoad()
     SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
     SlashCmdList["WAAAGHKICK"] = Waagh_Kick
     SLASH_WAAAGH1 = "/waaagh"
+    SLASH_WAAAGH1 = "/wa"
     SLASH_WAAAGHKICK1 = "/wak"
     SLASH_WAAAGHZERK1 = "/waz"
     SLASH_WAAAGHTANK1 = "/wat"
