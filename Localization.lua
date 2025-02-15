@@ -31,6 +31,10 @@ RACE_ORC   = "Orc"
 RACE_TROLL = "Troll"
 RACE_DWARF = "Dwarf"
 
+--[[ Mage Abilities ]]
+ABILITY_ICE_BARRIER_WAAAGH       = "Ice Barrier"
+ICON_ICE_BARRIER_WAAAGH          = "spell_ice_lament"
+--[[ Warrior Abilities ]] 
 ABILITY_BATTLE_SHOUT_WAAAGH       = "Battle Shout"
 ABILITY_BATTLE_STANCE_WAAAGH      = "Battle Stance"
 ABILITY_BERSERKER_RAGE_WAAAGH     = "Berserker Rage"
