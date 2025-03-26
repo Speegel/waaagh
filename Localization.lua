@@ -109,6 +109,12 @@ CHAT_SHIELBASH_BLOCKED_WAAAGH   = "Your Shield Bash was blocked by (.+)"
 -- CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 
+
+CHAT_RAKE_DODGED_WAAAGH         = "Your Rake was dodged by (.+)."
+CHAT_RAKE_MISS_WAAAGH           = "Your Rake missed (.+)"
+CHAT_RAKE_PARRY_WAAAGH          = "Your Rake is parried by (.+)"
+CHAT_RAKE_BLOCKED_WAAAGH        = "Your Rake was blocked by (.+)"
+
 CHAT_INTERRUPT2_WAAAGH          = "Your Pummel was (.+) by (.+)."
 CHAT_INTERRUPT3_WAAAGH          = "Your Shield Bash was (.+) by (.+)."
 CHAT_INTERRUPT4_WAAAGH          = "Your Pummel missed (.+)."

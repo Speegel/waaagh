@@ -6,7 +6,7 @@
 
 function Waaag_BattleShout()
     -- Battle Shout
-    if UnitMana("player") >= 10 and not UnitHasBuff("player", "Ability_Warrior_BattleShout") then
+    if UnitMana("player") >= 10 and not HasBuff("player", "Ability_Warrior_BattleShout") then
         Debug("03. Berserker : Battle Shout")
         CastSpellByName(ABILITY_BATTLE_SHOUT_WAAAGH)
         WaaaghLastBattleShoutCast = GetTime()

@@ -9,6 +9,7 @@ xsi:schemaLocation="http://www.blizzard.com/wow/ui/ C:\Projects\WoW\Bin\Interfac
 	<!-- My Script -->
 	<Script file="lib.lua"/>
 	<Script file="mage.lua"/>
+	<Script file="drood.lua"/>
 	<Script file="tank.lua"/>
 	<Script file="zerk.lua"/>
 	<Script file="zerk_solo.lua"/>

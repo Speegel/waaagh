@@ -2419,6 +2419,8 @@ function Waaagh_OnLoad()
     WaaaghLastChargeCast = 0
     WaaaghRevengeReadyUntil = 0
     WaaaghLastBattleShoutCast = GetTime() - 110
+    WaaaghLastRakeCast = GetTime() - 9
+    WaaaghLastRipCast = GetTime() - 12
     FlurryCombatTotal = 0
     WaaaghCombatTotal = 0
     SlashCmdList["WAAAGHZERK"] = Zerk
