@@ -109,11 +109,25 @@ CHAT_SHIELBASH_BLOCKED_WAAAGH   = "Your Shield Bash was blocked by (.+)"
 -- CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 CHAT_SHIELBASH_DODGED_WAAAGH    = "Your Shield Bash was dodged by (.+)."
 
-
 CHAT_RAKE_DODGED_WAAAGH         = "Your Rake was dodged by (.+)."
 CHAT_RAKE_MISS_WAAAGH           = "Your Rake missed (.+)"
 CHAT_RAKE_PARRY_WAAAGH          = "Your Rake is parried by (.+)"
 CHAT_RAKE_BLOCKED_WAAAGH        = "Your Rake was blocked by (.+)"
+
+CHAT_RIP_DODGED_WAAAGH         = "Your Rip was dodged by (.+)."
+CHAT_RIP_MISS_WAAAGH           = "Your Rip missed (.+)"
+CHAT_RIP_PARRY_WAAAGH          = "Your Rip is parried by (.+)"
+CHAT_RIP_BLOCKED_WAAAGH        = "Your Rip was blocked by (.+)"
+
+CHAT_CLAW_DODGED_WAAAGH         = "Your Claw was dodged by (.+)."
+CHAT_CLAW_MISS_WAAAGH           = "Your Claw missed (.+)"
+CHAT_CLAW_PARRY_WAAAGH          = "Your Claw is parried by (.+)"
+CHAT_CLAW_BLOCKED_WAAAGH        = "Your Claw was blocked by (.+)"
+
+CHAT_SHRED_DODGED_WAAAGH         = "Your Shred was dodged by (.+)."
+CHAT_SHRED_MISS_WAAAGH           = "Your Shred missed (.+)"
+CHAT_SHRED_PARRY_WAAAGH          = "Your Shred is parried by (.+)"
+CHAT_SHRED_BLOCKED_WAAAGH        = "Your Shred was blocked by (.+)"
 
 CHAT_INTERRUPT2_WAAAGH          = "Your Pummel was (.+) by (.+)."
 CHAT_INTERRUPT3_WAAAGH          = "Your Shield Bash was (.+) by (.+)."

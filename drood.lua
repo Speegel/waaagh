@@ -31,13 +31,17 @@ function DroodCat()
     end
 end
 
+
+
 function DroodCatBleed()
 
-    local RakeSlotID = GetTextureID("Ability_Druid_Disembowel")
-    local RipSlotID = GetTextureID("Ability_GhoulFrenzy")
+    -- local RakeSlotID = GetTextureID("Ability_Druid_Disembowel")
+    -- local RipSlotID = GetTextureID("Ability_GhoulFrenzy")
 
-    local rake_usable = IsUsableAction(RakeSlotID)
-    local rip_usable = IsUsableAction(RipSlotID)
+    -- local rake_usable = IsUsableAction(RakeSlotID)
+    -- local rip_usable = IsUsableAction(RipSlotID)
+
+    UnitXP("behindThreshold", "set", 2)
 
     local isBehind = UnitXP("behind", "player", "target")
 
@@ -48,21 +52,19 @@ function DroodCatBleed()
     local LastRip = (GetTime() - WaaaghLastRipCast)
     local LastRake = (GetTime() - WaaaghLastRakeCast)
 
-    -- message("Last Rip Cast :"..LastRip)
-    -- message("Last Rake Cast :"..LastRake)
-
-    -- 1, Auto attack closest target
     if Waaagh_Configuration["AutoAttack"] and not WaaaghAttack then
         AttackTarget()
-        -- message("enable combat - out")
-        return
     end
 
-    if WaaaghAttack and not HasDebuff("target","Spell_Nature_FaerieFire") then
-        CastSpellByName("Faerie Fire (Feral)()")
-        -- message("Cast FF - out")
-        return
-    end
+    -- if WaaaghAttack and not HasDebuff("target","Spell_Nature_FaerieFire") then
+    --     if GetSpellCooldownByName("Faerie Fire (Feral)") == 0 then
+    --         CastSpellByName("Faerie Fire (Feral)()")
+    --         if not (GetSpellCooldownByName("Faerie Fire (Feral)") == 0) then
+    --             WaaaghLastFaerieFireCast = GetTime()
+    --         end
+    --     end
+    --     return
+    -- end
 
     if WaaaghAttack and UnitMana("player") >= 30 and not HasBuff("player", "Ability_Mount_JungleTiger") then
         CastSpellByName("Tiger's Fury")
@@ -70,56 +72,56 @@ function DroodCatBleed()
     end
 
     if PlayerHasClearCast then
+        -- message(tostring(isBehind))
         if isBehind then
-            -- message("Cast Shred --")
-            CastSpellByName("Shred")
+            if GetSpellCooldownByName("Shred") == 0 then
+                CastSpellByName("Shred")
+            end
             return
         else
-            -- message("Cast Claw ----")
-            CastSpellByName("Claw")
+            if GetSpellCooldownByName("Claw") == 0 then
+                CastSpellByName("Claw")
+            end
             return
         end
     else
         if ComboPoints >= 4 then
-            if LastRip > 10 then
-                if IsCurrentAction(RipSlotID) then return end
-                -- message("cast RIP ---")
-                WaaaghLastRipCast = GetTime()
-                CastSpellByName("Rip")
+            if LastRip > 10 and TargetHealthPercent() >= 20 then
+                if GetSpellCooldownByName("Rip") == 0 then
+                    CastSpellByName("Rip")
+                    if not (GetSpellCooldownByName("Rip") == 0) then
+                        WaaaghLastRipCast = GetTime()
+                    end
+                end
                 return
             else
-                -- message("cast FB ---")
-                CastSpellByName("Ferocious Bite")
+                if GetSpellCooldownByName("Ferocious Bite") == 0 then
+                    CastSpellByName("Ferocious Bite")
+                end
                 return
             end
         else
+            -- message(LastRake)
             if LastRake > 7 then
-                if IsCurrentAction(RakeSlotID) then return end
-                -- message("Cast RAKE ----")
-                WaaaghLastRakeCast = GetTime()
-                CastSpellByName("Rake")
+                if GetSpellCooldownByName("Rake") == 0 then
+                    CastSpellByName("Rake")
+                    -- message(tostring(RakeSuccess))
+                    -- if not (GetSpellCooldownByName("Rake") == 0) and RakeSuccess then
+                    if not (GetSpellCooldownByName("Rake") == 0) then
+                        WaaaghLastRakeCast = GetTime()
+                    end
+                end
                 return
             else
-                if UnitMana("player") > 60 then
-                    -- message("Cast Claw ----")
-                    CastSpellByName("Claw")
+                if UnitMana("player") > 40 then
+                    if GetSpellCooldownByName("Claw") == 0 then
+                        CastSpellByName("Claw")
+                    end
                     return
                 end
             end
         end
     end
-    -- if (GetTime() - WaaaghLastRakeCast) >= 8 then
-    --     message("Cast RAKE ----")
-    --     WaaaghLastRakeCast = GetTime()
-    --     CastSpellByName("Rake")
-    --     return
-    -- end
-
-    -- if not PlayerHasClearCast and UnitMana("player") >= 60 then
-    --     message("Cast Claw ----")
-    --     CastSpellByName("Claw")
-    --     return
-    -- end
 end
 
 function DroodBear()
@@ -140,11 +142,15 @@ function DroodBear()
     end
 
     if UnitMana("player") >= 10 and maul_usable and IsMaulReady then
-        CastSpellByName("Maul")
+        if GetSpellCooldownByName("Maul") == 0 then
+            CastSpellByName("Maul")
+        end
     end
 
     if sbite_usable and IsSBiteReady then
-        CastSpellByName("Savage Bite")
+        if GetSpellCooldownByName("Savage Bite") == 0 then
+            CastSpellByName("Savage Bite")
+        end
     end
 
 end
@@ -156,12 +162,28 @@ function HealingShift(Spell)
 
     if CurrentShift == 1 or CurrentShift == 3 then LastDroodShift = CurrentShift end
 
-    if Spell == 'Regrowth' and not HasBuff("player", "Spell_Nature_ResistNature") then CastSpellByName("Regrowth") end
-    if Spell == 'Rejuvenation' and not HasBuff("player", "Spell_Nature_Rejuvenation") then CastSpellByName("Rejuvenation") end
-
-    message(LastDroodShift)
-
-    if LastDroodShift == 1 or LastDroodShift == 3 then
-        DoShapeShift(LastDroodShift)
+    if Spell == 'Regrowth' and not HasBuff("player", "Spell_Nature_ResistNature") then
+        if GetSpellCooldownByName("Regrowth") == 0 then
+            CastSpellByName("Regrowth")
+        end
     end
+
+    if Spell == 'Rejuvenation' and not HasBuff("player", "Spell_Nature_Rejuvenation") then
+        if GetSpellCooldownByName("Rejuvenation") == 0 then
+            CastSpellByName("Rejuvenation")
+        end
+    end
+
+    if LastDroodShift == 1 then
+        if GetSpellCooldownByName("Dire Bear Form") == 0 then
+            CastSpellByName("Dire Bear Form")
+        end
+    end
+
+    if LastDroodShift == 3 then
+        if GetSpellCooldownByName("Cat Form") == 0 then
+            CastSpellByName("Cat Form")
+        end
+    end
+
 end

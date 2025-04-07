@@ -2421,6 +2421,9 @@ function Waaagh_OnLoad()
     WaaaghLastBattleShoutCast = GetTime() - 110
     WaaaghLastRakeCast = GetTime() - 9
     WaaaghLastRipCast = GetTime() - 12
+    WaaaghLastFaerieFireCast = GetTime() - 38
+    RipSuccess = true
+    RakeSuccess = true
     FlurryCombatTotal = 0
     WaaaghCombatTotal = 0
     SlashCmdList["WAAAGHZERK"] = Zerk
@@ -2429,7 +2432,7 @@ function Waaagh_OnLoad()
     SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
     SlashCmdList["WAAAGHKICK"] = Waagh_Kick
     SLASH_WAAAGH1 = "/waaagh"
-    SLASH_WAAAGH1 = "/wa"
+    SLASH_WAAAGH1 = "/waa"
     SLASH_WAAAGHKICK1 = "/wak"
     SLASH_WAAAGHZERK1 = "/waz"
     SLASH_WAAAGHTANK1 = "/wat"
@@ -2476,6 +2479,12 @@ function Waaagh_OnEvent()
     -- if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES" or event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE") then
     --     Debug(arg1)
     -- end
+    if event == "PLAYER_TARGET_CHANGED" then
+        if UnitCanAttack("player", "target") then
+            -- message("can attack "..UnitName("target").." reset Rake timer")
+            WaaaghLastRakeCast = GetTime() - 9
+        end
+    end
     if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")
         and (string.find(arg1, CHAT_PUMMEL_HITS_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_HITS_WAAAGH)) then
         pfUI.api.SendChatMessageWide("Interrupt SUCCESS on [ %t ]")
@@ -2500,6 +2509,79 @@ function Waaagh_OnEvent()
         and (string.find(arg1, CHAT_PUMMEL_DODGED_WAAAGH) or string.find(arg1, CHAT_SHIELBASH_DODGED_WAAAGH) or string.find(arg1, CHAT_INTERRUPT3_WAAAGH)) then
         pfUI.api.SendChatMessageWide("Interrupt FAILED [ Dodged ] on [ %t ]")
     end
+
+    -- Drood - RAKE - Check 
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RAKE_PARRY_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rake FAILED [ Parried ] on [ %t ]")
+        message("Rake Parried by "..UnitName("target").." -> Reset Rake timer")
+        WaaaghLastRakeCast = GetTime() - 9
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RAKE_BLOCKED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rake FAILED [ Blocked ] on [ %t ]")
+        message("Rake Blocked by "..UnitName("target").." -> Reset Rake timer")
+        WaaaghLastRakeCast = GetTime() - 9
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RAKE_MISS_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rake FAILED  [ Missed ] on [ %t ]")
+        message("Rake Missed on "..UnitName("target").." -> Reset Rake timer")
+        WaaaghLastRakeCast = GetTime() - 9
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RAKE_DODGED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rake FAILED [ Dodged ] on [ %t ]")
+        message("Rake Dodged by "..UnitName("target").." -> Reset Rake timer")
+        WaaaghLastRakeCast = GetTime() - 9
+    end
+    -- Drood - RAKE - Check 
+
+    -- Drood - RIP - Check 
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RIP_PARRY_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rip FAILED [ Parried ] on [ %t ]")
+        RipSuccess = false
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RIP_BLOCKED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rip FAILED [ Blocked ] on [ %t ]")
+        RipSuccess = false
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RIP_MISS_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rip FAILED  [ Missed ] on [ %t ]")
+        RipSuccess = false
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_RIP_DODGED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Rip FAILED [ Dodged ] on [ %t ]")
+        RipSuccess = false
+    end
+    -- Drood - RIP - Check 
+
+    -- Drood - CLAW - Check 
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_CLAW_PARRY_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Claw FAILED [ Parried ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_CLAW_BLOCKED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Claw FAILED [ Blocked ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_CLAW_MISS_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Claw FAILED  [ Missed ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_CLAW_DODGED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Claw FAILED [ Dodged ] on [ %t ]")
+    end
+    -- Drood - CLAW - Check 
+
+    -- Drood - SHRED - Check 
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_SHRED_PARRY_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Shred FAILED [ Parried ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_SHRED_BLOCKED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Shred FAILED [ Blocked ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_SHRED_MISS_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Shred FAILED  [ Missed ] on [ %t ]")
+    end
+    if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES") and (string.find(arg1, CHAT_SHRED_DODGED_WAAAGH)) then
+        -- pfUI.api.SendChatMessageWide("Shred FAILED [ Dodged ] on [ %t ]")
+    end
+    -- Drood - SHRED - Check 
+
     if event == "CHAT_MSG_COMBAT_SELF_MISSES"
         and (string.find(arg1, CHAT_INTERRUPT2_WAAAGH)
             or string.find(arg1, CHAT_INTERRUPT3_WAAAGH)

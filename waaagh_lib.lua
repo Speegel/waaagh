@@ -237,3 +237,45 @@ function Oogla_FindItem(oItem)
         end
     end
 end
+
+-- Checks if the player can cast a spell (gcd, cooldown, etc)
+function CanCastSpell(spellName)
+    return (select(1, GetSpellCooldownByName(spellName)) == 0)
+    --
+end
+
+-- Get target health percent
+function TargetHealthPercent()
+    return (UnitHealth("target") / UnitHealthMax("target") * 100)
+    --
+end
+
+function GetSpellID(name, booktype)
+    if booktype == nil then
+        booktype = BOOKTYPE_SPELL;
+    end
+
+    local i = 1;
+    local spellName, spellRank = GetSpellName(i, booktype);
+
+    while (spellName ~= nil) do
+        if (spellName == name) then
+            return i;
+        else
+            i = i + 1;
+            spellName, spellRank = GetSpellName(i, booktype);
+        end
+    end
+end
+
+function GetSpellCooldownByName(name, booktype)
+    if booktype == nil then
+        booktype = BOOKTYPE_SPELL;
+    end
+
+    name = string.gsub(name, "%(Rank %d+%)", "");
+
+    local spellID = GetSpellID(name);
+    local StartTime, Duration, Enable = GetSpellCooldown(spellID, booktype);
+    return Duration;
+end
