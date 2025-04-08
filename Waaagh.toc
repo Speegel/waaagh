@@ -3,6 +3,7 @@
 ## Notes: Make Spiegel spam less buttons
 ## Author: Spiegel
 ## Version: 1.0.1
+## X-Version: 0.10.3
 ## DefaultState: enabled
 ## SavedVariables: Waaagh_Configuration, Waaagh_Runners, Waaagh_ImmuneDisarm
 ## OptionalDeps: IsMounted, Outfitter, pfUI, ShaguTweaks, SuperMacro, MikScrollingBattleText
