@@ -2422,6 +2422,11 @@ function Waaagh_OnLoad()
     WaaaghLastRakeCast = GetTime() - 9
     WaaaghLastRipCast = GetTime() - 12
     WaaaghLastFaerieFireCast = GetTime() - 38
+    WaaaghWarriorLastBattleShout = GetTime() - 110
+    WaaaghWarriorLastSunderArmor = GetTime() - 28
+    WaaaghWarriorFirstSunderArmor = false 
+    WaaaghLastInsectSwarm = GetTime() - 18
+    WaaaghLastMoonFire = GetTime() - 18
     RipSuccess = true
     RakeSuccess = true
     FlurryCombatTotal = 0
@@ -2431,12 +2436,15 @@ function Waaagh_OnLoad()
     SlashCmdList["WAAAGHSHOOT"] = Shoot
     SlashCmdList["WAAAGH"] = Waaagh_SlashCommand
     SlashCmdList["WAAAGHKICK"] = Waagh_Kick
+    SlashCmdList["WAAAGHSMARTCONSUME"] = WaaaghSmartConsume
+    SLASH_WAAAGHUI1 = "/wui"
     SLASH_WAAAGH1 = "/waaagh"
     SLASH_WAAAGH1 = "/waa"
     SLASH_WAAAGHKICK1 = "/wak"
     SLASH_WAAAGHZERK1 = "/waz"
     SLASH_WAAAGHTANK1 = "/wat"
     SLASH_WAAAGHSHOOT1 = "/was"
+    SLASH_WAAAGHSMARTCONSUME1 = "/waac"
 end
 
 --------------------------------------------------
@@ -2483,6 +2491,11 @@ function Waaagh_OnEvent()
         if UnitCanAttack("player", "target") then
             -- message("can attack "..UnitName("target").." reset Rake timer")
             WaaaghLastRakeCast = GetTime() - 9
+            WaaagWarriorLastSunderArmor = GetTime() - 28
+            WaaaghLastInsectSwarm = GetTime() - 18
+            WaaaghLastMoonFire = GetTime() - 18
+            WaaagWarriorFirstSunderArmor = false
+            WaaaghLastSunder = nil
         end
     end
     if (event == "CHAT_MSG_SPELL_SELF_DAMAGE" or event == "CHAT_MSG_COMBAT_SELF_MISSES")

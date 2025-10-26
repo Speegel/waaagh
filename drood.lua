@@ -1,3 +1,48 @@
+-- local recentBuffs = {}
+
+-- -- Function to parse combat log
+-- local function OnCombatLogEvent()
+--     local message = arg1
+    
+--     -- Look for buff gain messages like "You gain Power Word: Fortitude"
+--     local buffName = string.match(message, "You gain (.+)%.")
+--     if buffName then
+--         recentBuffs[buffName] = GetTime()
+--     end
+-- end
+
+-- -- Hook the combat log
+-- local frame = CreateFrame("Frame")
+-- frame:RegisterEvent("CHAT_MSG_SPELL_PERIODIC_SELF_BUFFS")
+-- frame:SetScript("OnEvent", OnCombatLogEvent)
+
+-- function FindPlayerBuffWithLog(buffName)
+--     local i = 1
+    
+--     while true do
+--         local buffTexture = GetPlayerBuffTexture(i)
+--         if not buffTexture then break end
+        
+--         local timeLeft = GetPlayerBuffTimeLeft(i) or 0
+--         local applications = GetPlayerBuffApplications(i) or 1
+        
+--         -- Check if this buff was recently applied according to combat log
+--         if recentBuffs[buffName] and (GetTime() - recentBuffs[buffName]) < 5 then
+--             -- Assume this is the buff we're looking for if it matches our recent log
+--             return {
+--                 present = true,
+--                 stacks = applications,
+--                 timeLeft = timeLeft,
+--                 name = buffName
+--             }
+--         end
+        
+--         i = i + 1
+--     end
+    
+--     return {present = false, stacks = 0, timeLeft = 0, name = nil}
+-- end
+
 function DroodCat()
 
     local isBehind = UnitXP("behind", "player", "target")
@@ -31,21 +76,94 @@ function DroodCat()
     end
 end
 
+function BoomkinDot()
+    local MoonfireParams = {
+        refreshtime=2,
+        priotarget,
+        name=arcane
+    }
+    local LastInsectSwarmParams = {
+        refreshtime=2,
+        priotarget,
+        minhp=10000
+    }
+    if not Cursive:Multicurse("Moonfire","RAID_MARK", MoonfireParams) then
+        Cursive:Multicurse("Insect Swarm","RAID_MARK", LastInsectSwarmParams)
+    end
+end
 
+function BoomkinDotInsectSwarm()
+    local LastInsectSwarmParams = {
+        refreshtime=2,
+        priotarget,
+        minhp=100
+    }
+    Cursive:Multicurse("Insect Swarm","RAID_MARK", LastInsectSwarmParams)
+end
+
+function GetDotTimeLeft(SpellName)
+
+    local _, guid = UnitExists("target")
+    local data = Cursive.curses:GetCurseData(SpellName, guid)
+    if data then
+        local DotTimeLeft = Cursive.curses:TimeRemaining(data)
+        return DotTimeLeft
+    end
+    
+    return 0
+
+end
+
+function BoomkinWrath()
+    CastSpellByName("Wrath")
+end
+
+
+function BoomkinStarfire()
+    CastSpellByName("Starfire")
+end
+
+function Boomkin()
+    local HasArcaneEclipse = BuffQuery:HasBuff ("Arcane Eclipse")
+    local HasArcaneSolstice = BuffQuery:HasDebuff("Arcane Solstice")
+    local HasNaturalBoon = BuffQuery:HasBuff("Natural Boon")
+    local HasNaturalSolstice = BuffQuery:HasDebuff("Natural Solstice")
+    local HasNatureEclipse = BuffQuery:HasBuff("Nature Eclipse")
+    local HasNatureGrace = BuffQuery:HasBuff("Nature's Grace")
+
+    if GetSpellCooldownByName("Moonfire") == 0 then
+        if GetDotTimeLeft("Moonfire") <= 1 then
+            CastSpellByName("Moonfire")
+            return
+        end
+        if GetDotTimeLeft("Insect Swarm") <= 1 then
+            CastSpellByName("Insect Swarm")
+            return
+        end
+        if HasArcaneEclipse then
+            CastSpellByName("Starfire")
+            return
+        end
+        if HasNatureEclipse then
+            CastSpellByName("Wrath")
+            return
+        end
+        if HasNaturalSolstice and not HasArcaneSolstice then
+            CastSpellByName("Starfire")
+            return
+        end
+        CastSpellByName("Wrath")
+
+    end
+end
 
 function DroodCatBleed()
-
-    -- local RakeSlotID = GetTextureID("Ability_Druid_Disembowel")
-    -- local RipSlotID = GetTextureID("Ability_GhoulFrenzy")
-
-    -- local rake_usable = IsUsableAction(RakeSlotID)
-    -- local rip_usable = IsUsableAction(RipSlotID)
-
     UnitXP("behindThreshold", "set", 2)
 
     local isBehind = UnitXP("behind", "player", "target")
 
     local PlayerHasClearCast = HasBuff("player","Spell_Shadow_ManaBurn")
+    local PlayerHasProwl = HasBuff("player","Ability_Ambush")
 
     local ComboPoints = GetComboPoints("player","target")
 
@@ -56,23 +174,19 @@ function DroodCatBleed()
         AttackTarget()
     end
 
-    -- if WaaaghAttack and not HasDebuff("target","Spell_Nature_FaerieFire") then
-    --     if GetSpellCooldownByName("Faerie Fire (Feral)") == 0 then
-    --         CastSpellByName("Faerie Fire (Feral)()")
-    --         if not (GetSpellCooldownByName("Faerie Fire (Feral)") == 0) then
-    --             WaaaghLastFaerieFireCast = GetTime()
-    --         end
-    --     end
-    --     return
-    -- end
-
     if WaaaghAttack and UnitMana("player") >= 30 and not HasBuff("player", "Ability_Mount_JungleTiger") then
         CastSpellByName("Tiger's Fury")
         return
     end
 
+    if PlayerHasProwl then
+        if GetSpellCooldownByName("Ravage") == 0 then
+            CastSpellByName("Ravage")
+        end
+        return
+    end
+
     if PlayerHasClearCast then
-        -- message(tostring(isBehind))
         if isBehind then
             if GetSpellCooldownByName("Shred") == 0 then
                 CastSpellByName("Shred")
@@ -105,8 +219,6 @@ function DroodCatBleed()
             if LastRake > 7 then
                 if GetSpellCooldownByName("Rake") == 0 then
                     CastSpellByName("Rake")
-                    -- message(tostring(RakeSuccess))
-                    -- if not (GetSpellCooldownByName("Rake") == 0) and RakeSuccess then
                     if not (GetSpellCooldownByName("Rake") == 0) then
                         WaaaghLastRakeCast = GetTime()
                     end
@@ -137,9 +249,9 @@ function DroodBear()
         return
     end
 
-    if WaaaghAttack and not HasDebuff("target","Spell_Nature_FaerieFire") then
-        CastSpellByName("Faerie Fire (Feral)()")
-    end
+    -- if WaaaghAttack and not HasDebuff("target","Spell_Nature_FaerieFire") then
+    --     CastSpellByName("Faerie Fire (Feral)()")
+    -- end
 
     if UnitMana("player") >= 10 and maul_usable and IsMaulReady then
         if GetSpellCooldownByName("Maul") == 0 then
@@ -154,7 +266,6 @@ function DroodBear()
     end
 
 end
-
 
 function HealingShift(Spell)
 

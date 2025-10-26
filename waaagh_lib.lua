@@ -279,3 +279,291 @@ function GetSpellCooldownByName(name, booktype)
     local StartTime, Duration, Enable = GetSpellCooldown(spellID, booktype);
     return Duration;
 end
+
+-- Create a simple tooltip for scanning
+local scanTooltip = CreateFrame("GameTooltip", "BuffScanTooltip")
+scanTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+
+function GetBuffNameFromSlot(buffSlot)
+    scanTooltip:ClearLines()
+    scanTooltip:SetPlayerBuff(buffSlot)
+    message(scanTooltip:NumLines())
+    -- In vanilla, we need to check if the tooltip has text
+    if scanTooltip:NumLines() > 0 then
+        local fontString = getglobal("BuffScanTooltipTextLeft1")
+        if fontString then
+            message("name: " .. fontString:GetText())
+            return fontString:GetText()
+        end
+    end
+    
+    return nil
+end
+
+function FindPlayerBuff(buffName)
+    local i = 1
+
+    while true do
+        local buffTexture = GetPlayerBuffTexture(i)
+
+        if not buffTexture then
+            break
+        end
+
+        if name and string.lower(name) == string.lower(buffName) then
+            local timeLeft = GetPlayerBuffTimeLeft(i) or 0
+            local applications = GetPlayerBuffApplications(i) or 1
+
+            return {
+                present = true,
+                stacks = applications,
+                timeLeft = timeLeft,
+                name = name
+            }
+        end
+
+        i = i + 1
+    end
+
+    return {
+        present = false,
+        stacks = 0,
+        timeLeft = 0,
+        name = nil
+    }
+end
+
+-- Smart Consume Function for WoW 1.12 - Enhanced with eating/drinking checks
+function WaaaghSmartConsume()
+    -- Check if player is already eating or drinking
+    local function scIsEating()
+        -- Check for eating/drinking buffs
+        local i = 1
+        while UnitBuff("player", i) do
+            local buffTexture = UnitBuff("player", i)
+            if buffTexture then
+
+                -- DEFAULT_CHAT_FRAME:AddMessage(buffTexture)
+ 
+                -- Common eating/drinking buff textures in vanilla
+                local eatingDrinkingTextures = {
+                    "Interface\\Icons\\Ability_Creature_Cursed_02", -- Food
+                    "Interface\\Icons\\INV_Misc_Fork&Knife", -- Food
+                    "Interface\\Icons\\INV_Misc_Food_15", -- Food
+                    "Interface\\Icons\\INV_Misc_Food_28", -- Food
+                    "Interface\\Icons\\INV_Misc_Food_32", -- Food
+                }
+
+                for _, texture in ipairs(eatingDrinkingTextures) do
+                    if string.find(buffTexture, texture) then
+                        return true
+                    end
+                end
+            end
+            i = i + 1
+        end
+
+        -- Alternative check: look for "Food" or "Drink" in buff tooltips
+        i = 1
+        while UnitBuff("player", i) do
+            GameTooltip:SetUnitBuff("player", i)
+            local tooltipText = GameTooltipTextLeft1:GetText()
+            if tooltipText then
+                if string.find(tooltipText, "Food") or 
+                   string.find(tooltipText, "Eating") then
+                    return true
+                end
+            end
+            i = i + 1
+        end
+
+        return false
+    end
+
+    local function scIsDrinking()
+        -- Check for eating/drinking buffs
+        local i = 1
+        while UnitBuff("player", i) do
+            local buffTexture = UnitBuff("player", i)
+            if buffTexture then
+                -- Common eating/drinking buff textures in vanilla
+                local eatingDrinkingTextures = {
+                    "Interface\\Icons\\INV_Drink_07",     -- Drinking
+                    "Interface\\Icons\\INV_Drink_10",     -- Drinking  
+                    "Interface\\Icons\\INV_Drink_11",     -- Drinking
+                    "Interface\\Icons\\INV_Drink_17",     -- Drinking
+                    "Interface\\Icons\\INV_Drink_18",     -- Drinking
+                    "Interface\\Icons\\INV_Drink_19",     -- Drinking
+                }
+                
+                for _, texture in ipairs(eatingDrinkingTextures) do
+                    if string.find(buffTexture, texture) then
+                        return true
+                    end
+                end
+            end
+            i = i + 1
+        end
+        
+        -- Alternative check: look for "Food" or "Drink" in buff tooltips
+        i = 1
+        while UnitBuff("player", i) do
+            GameTooltip:SetUnitBuff("player", i)
+            local tooltipText = GameTooltipTextLeft1:GetText()
+            if tooltipText then
+                if string.find(tooltipText, "Drink") or
+                   string.find(tooltipText, "Drinking") then
+                    return true
+                end
+            end
+            i = i + 1
+        end
+        
+        return false
+    end
+   
+    -- Define conjured food items
+    local conjuredFood = {
+        "Conjured Mana Orange",
+        "Conjured Mana Biscuit",
+        "Conjured Sweet Roll",
+        "Conjured Bread",
+        "Conjured Pumpernickel",
+        "Conjured Sourdough",
+        "Conjured Rye"
+    }
+    
+    -- Define conjured drink items
+    local conjuredDrink = {
+        "Conjured Water",
+        "Conjured Fresh Water",
+        "Conjured Purified Water",
+        "Conjured Spring Water",
+        "Conjured Mineral Water",
+        "Conjured Sparkling Water",
+        "Conjured Crystal Water"
+    }
+    
+    -- Define regular food items
+    local regularFood = {
+        "Raw Black Truffle",
+        "Sweet Nectar",
+        "Bread",
+        "Brown Bread",
+        "Fresh Bread",
+        "Moist Cornbread",
+        "Dalaran Sharp",
+        "Dwarven Mild",
+        "Alterac Swiss",
+        "Goldenbark Apple",
+        "Red-speckled Mushroom",
+        "Forest Mushroom Cap",
+        "Spongy Morel"
+    }
+    
+    -- Define regular drink items  
+    local regularDrink = {
+        "Moonberry Juice",
+        "Sweet Nectar",
+        "Ice Cold Milk",
+        "Refreshing Spring Water",
+        "Bottled Water",
+        "Filtered Water",
+        "Distilled Water",
+        "Purified Water"
+    }
+    
+    -- Clear modifier keys to prevent stack splitting
+    -- local function clearModifiers()
+    --     -- Store current modifier states
+    --     local wasShiftDown = IsShiftKeyDown()
+    --     local wasCtrlDown = IsControlKeyDown()
+    --     local wasAltDown = IsAltKeyDown()
+        
+    --     -- Temporarily clear modifiers
+    --     if wasShiftDown then
+    --         RunScript("this.wasShiftDown = true")
+    --     end
+    --     if wasCtrlDown then
+    --         RunScript("this.wasCtrlDown = true") 
+    --     end
+    --     if wasAltDown then
+    --         RunScript("this.wasAltDown = true")
+    --     end
+        
+    --     -- Return restore function
+    --     return function()
+    --         -- Modifiers will naturally restore when keys are released
+    --         -- This is just for completeness
+    --     end
+    -- end
+
+    -- Function to find and use item
+    local function scUseItem(itemList)
+        for _, itemName in ipairs(itemList) do
+            for bag = 0, 4 do
+                local numSlots = GetContainerNumSlots(bag)
+                if numSlots and numSlots > 0 then
+                    for slot = 1, numSlots do
+                        local texture, itemCount = GetContainerItemInfo(bag, slot)
+                        if texture and itemCount and itemCount > 0 then
+                            local itemLink = GetContainerItemLink(bag, slot)
+                            if itemLink then
+                                local _, _, itemString = string.find(itemLink, "item:([%-?%d:]+)")
+                                if itemString then
+                                    local name = GetItemInfo("item:"..itemString)
+                                    if name and name == itemName then
+                                        -- local restoreModifiers = clearModifiers()
+                                        -- UseContainerItem(bag, slot)
+                                        -- restoreModifiers()
+                                        if UseItemByName then
+                                            UseItemByName(itemName)
+                                            return true
+                                        end
+                                        return true
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return false
+    end
+    
+    -- Determine what lists to use based on consumeType parameter
+    local foodItemLists = {}
+    local drinktemLists = {}
+
+    table.insert(foodItemLists, conjuredFood)
+    table.insert(foodItemLists, regularFood)
+    table.insert(drinktemLists, conjuredDrink)
+    table.insert(drinktemLists, regularDrink)
+
+    -- Check if already consuming
+    if scIsEating() then
+        -- DEFAULT_CHAT_FRAME:AddMessage("Already eating!")
+        if scIsDrinking() then
+            -- DEFAULT_CHAT_FRAME:AddMessage("Already drinking!")
+            return
+        else
+            -- Try each list in order until something is used
+            for _, itemList in ipairs(drinktemLists) do
+                if scUseItem(itemList) then
+                    return
+                end
+            end
+        end
+    else
+        -- Try each list in order until something is used
+        for _, itemList in ipairs(foodItemLists) do
+            if scUseItem(itemList) then
+                return
+            end
+        end
+    end
+
+    -- Nothing found
+    DEFAULT_CHAT_FRAME:AddMessage("No consumables found!")
+end

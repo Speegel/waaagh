@@ -35,8 +35,7 @@ local CONFIG = {
     MQG_ACTIVE_CHECK = true, -- Check for Mind Quickening Gem active
     ARCANE_POWER_ACTIVE_CHECK = true, -- Check for Arcane Power active
     DEBUG = false, -- Set to true for debug messages
-    PRECAST_RUPTURE = true, -- Allow casting Rupture out of combat
-    ARCANE_SURGE_SLOT = nil -- Action bar slot for Arcane Surge (manually set)
+    PRECAST_RUPTURE = true -- Allow casting Rupture out of combat
 }
 
 -- Spell names (adjust if localized)
@@ -53,7 +52,7 @@ local SPELLS = {
 local BUFFS = {
     ARCANE_POWER = "Arcane Power",
     PRESENCE_OF_MIND = "Presence of Mind",
-    RUPTURE_BUFF = "Spell_Nature_StormReach", -- Adjust based on actual buff name
+    RUPTURE_BUFF = "Arcane Rupture", -- Adjust based on actual buff name
     MQG = "Mind Quickening Gem", -- Adjust based on actual buff name
     MISSILE_BARRAGE = "Missile Barrage"
 }
@@ -65,8 +64,7 @@ local castingState = {
     channelEndTime = 0,
     lastSpellResisted = false,
     resistTime = 0,
-    shouldInterruptChannel = false,
-    surgeUsable = false -- Track surge usability manually
+    shouldInterruptChannel = false
 }
 
 -- Helper Functions
@@ -78,40 +76,11 @@ end
 
 -- Check if shift key is pressed (vanilla compatible)
 local function IsShiftPressed()
+    -- In vanilla WoW, we need to check the actual key state
+    -- IsShiftKeyDown() is the correct function name in vanilla
     if IsShiftKeyDown then
         return IsShiftKeyDown()
     end
-    return false
-end
-
--- Check if Arcane Surge is usable using IsUsableAction (requires manual slot setting)
-local function IsArcaneSurgeUsable()
-    -- If we have a manually set slot, check if it's usable
-    CONFIG.ARCANE_SURGE_SLOT = GetTextureID("INV_Enchant_EssenceMysticalLarge")
-    
-    if CONFIG.ARCANE_SURGE_SLOT then
-        local isUsable, notEnoughMana = IsUsableAction(CONFIG.ARCANE_SURGE_SLOT)
-        if CONFIG.DEBUG then
-            DebugPrint("Arcane Surge slot " .. CONFIG.ARCANE_SURGE_SLOT .. " usable: " .. (isUsable and "yes" or "no") .. ", mana: " .. (notEnoughMana and "insufficient" or "sufficient"))
-        end
-        return isUsable and not notEnoughMana
-    end
-    
-    -- Fallback to manual tracking if no slot set
-    if castingState.surgeUsable then
-        return true
-    end
-    
-    -- Alternative: check if we recently had a resist (fallback)
-    if castingState.lastSpellResisted and (GetTime() - castingState.resistTime) < 30 then
-        return true
-    end
-    
-    -- If no slot is set, warn user
-    if CONFIG.DEBUG then
-        DebugPrint("No Arcane Surge slot set - use /arcane setslot [number]")
-    end
-    
     return false
 end
 
@@ -144,6 +113,50 @@ local function IsSpellReady(spellName)
     return true
 end
 
+-- Check if a spell is actually usable (not grayed out)
+local function IsSpellUsable(spellName)
+    local spellId = nil
+    local spellBook = "spell"
+    
+    -- Search spellbook for the spell
+    local i = 1
+    while true do
+        local spellName_found, spellRank = GetSpellName(i, spellBook)
+        if not spellName_found then
+            break
+        end
+        if spellName_found == spellName then
+            spellId = i
+            break
+        end
+        i = i + 1
+    end
+    
+    if spellId then
+        print(spellId)
+        -- Check if spell is usable (not grayed out)
+        local isUsable, notEnoughMana = IsUsableSpell(spellName, BOOKTYPE_SPELL)
+        local isSpellReady = IsSpellReady(spellName)
+        -- if isUsable and isSpellReady then
+            return isUsable
+        -- end
+    end
+    
+    return false
+end
+
+-- Check if Arcane Surge is actually usable (after a resist)
+local function IsArcaneSurgeUsable()
+    -- Check if the spell is actually usable (not grayed out)
+    local isUsable = IsSpellUsable(SPELLS.ARCANE_SURGE)
+    
+    if CONFIG.DEBUG then
+        DebugPrint("Arcane Surge usable check: " .. (isUsable and "yes" or "no"))
+    end
+    
+    return isUsable
+end
+
 -- Standard buff checking (no pfUI dependencies)
 local function HasBuff(unit, buffName)
     local i = 1
@@ -173,8 +186,10 @@ end
 local function IsCasting()
     -- Check pfUI casting detection first
     if pfUI and pfUI.api and pfUI.env.UnitChannelInfo then
+        -- DebugPrint(" PFUI IS CASTING")
         return pfUI.env.UnitChannelInfo("player")
     end
+    DebugPrint(" IS CASTING FALLBACK ")
     -- Fallback methods
     return SpellIsTargeting() or castingState.isChanneling
 end
@@ -205,14 +220,10 @@ local function CastSpell(spellName)
         return false
     end
     
-    -- Special handling for Arcane Surge
-    if spellName == SPELLS.ARCANE_SURGE then
-        if not IsArcaneSurgeUsable() then
-            DebugPrint("Arcane Surge not usable")
-            return false
-        end
-        -- Reset surge usability after attempting to cast
-        castingState.surgeUsable = false
+    -- Special check for Arcane Surge - check if it's actually usable
+    if spellName == SPELLS.ARCANE_SURGE and not IsArcaneSurgeUsable() then
+        DebugPrint("Arcane Surge not usable (no recent resist)")
+        return false
     end
     
     -- Track channeling spells
@@ -246,41 +257,19 @@ local function OnEvent(event)
             castingState.isChanneling = false
             castingState.channelSpell = nil
         end
-        
-        -- Check if we just cast Arcane Surge
-        if arg1 == SPELLS.ARCANE_SURGE then
-            castingState.surgeUsable = false
-            DebugPrint("Arcane Surge cast - resetting usability")
-        end
     elseif event == "SPELLCAST_FAILED" then
         -- Check if the failure was due to resist
         if arg1 and (string.find(arg1, "resist") or string.find(arg1, "immune")) then
             castingState.lastSpellResisted = true
             castingState.resistTime = GetTime()
-            castingState.surgeUsable = true -- Mark surge as usable
-            DebugPrint("Spell resisted - Arcane Surge now available")
+            DebugPrint("Spell resisted - Arcane Surge should now be available")
         end
     elseif event == "CHAT_MSG_SPELL_SELF_DAMAGE" then
         -- Alternative way to detect resists from combat log
         if arg1 and string.find(arg1, "resist") then
             castingState.lastSpellResisted = true
             castingState.resistTime = GetTime()
-            castingState.surgeUsable = true -- Mark surge as usable
-            DebugPrint("Resist detected from combat log - Arcane Surge available")
-        end
-    elseif event == "CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE" then
-        -- Check for partial resists in creature damage
-        if arg1 and string.find(arg1, "resist") then
-            castingState.lastSpellResisted = true
-            castingState.resistTime = GetTime()
-            castingState.surgeUsable = true
-            DebugPrint("Partial resist detected - Arcane Surge available")
-        end
-    elseif event == "CHAT_MSG_SPELL_SELF_BUFF" then
-        -- Check for spell reflection or absorption that might trigger surge
-        if arg1 and (string.find(arg1, "reflect") or string.find(arg1, "absorb")) then
-            castingState.surgeUsable = true
-            DebugPrint("Spell reflected/absorbed - Arcane Surge available")
+            DebugPrint("Resist detected from combat log")
         end
     end
 end
@@ -294,80 +283,6 @@ local function IsMoving()
     
     -- Ultimate fallback: always assume not moving
     return false
-end
-
-local function IsCasting_pfUI()
-    if pfUI and pfUI.castbar and pfUI.castbar.player then
-        local castbar = pfUI.castbar.player
-        if castbar.casting or castbar.channeling then
-            message(castbar.spell)
-            return true, castbar.spell
-        end
-    end
-    return false
-end
-
-local function ChannelArcaneMissileSafe()
-    if GetCurrentCastingInfo then
-        local _, _, _, casting, channeling = GetCurrentCastingInfo()
-        if channeling == 0 then
-            CastSpell(SPELLS.ARCANE_MISSILES)
-        end
-    end
-end
-
-local function CastSurgeSafe()
-    if GetCurrentCastingInfo then
-        local _, _, _, casting, channeling = GetCurrentCastingInfo()
-        if channeling == 0 then
-            if IsArcaneSurgeUsable() and not HasArcaneRupture then
-                CastSpell(SPELLS.ARCANE_SURGE)
-            end
-        end
-    end
-end
-
-function ArcaneMageRotation.ExecuteEnhanced()
-    local HasTemporalConvergence = BuffQuery:HasBuff("Temporal Convergence")
-    local HasArcaneRupture = BuffQuery:HasDebuff("Arcane Rupture")
-    local stopCastCooldown = 0
-    local castingInterruptableSpell = false
-
-    -- Check if we're in combat
-    local inCombat = UnitAffectingCombat("player")
-
-    if not inCombat then
-        CastSpell(SPELLS.ARCANE_RUPTURE)
-    else
-        -- Cursive:Target(SPELLS.ARCANE_RUPTURE, "RAID_MARK", {})
-
-        CastSurgeSafe()
-
-        if IsSpellReady(SPELLS.ARCANE_RUPTURE) then
-            CastSpell(SPELLS.ARCANE_RUPTURE)
-            return
-        end
-
-        if HasTemporalConvergence then
-            -- If nampower available, check if we are actually casting something
-            -- to avoid needlessly calling SpellStopCasting and wiping spell queue
-            if GetCurrentCastingInfo then
-                local _, _, _, casting, channeling = GetCurrentCastingInfo()
-                if channeling == 1 then
-                    castingInterruptableSpell = true
-                end
-            end
-            if castingInterruptableSpell then
-                SpellStopCasting()
-            end
-            CastSpell(SPELLS.ARCANE_RUPTURE)
-            return
-        else
-            ChannelArcaneMissileSafe()
-            return
-        end
-        ChannelArcaneMissileSafe()
-    end
 end
 
 -- Main Rotation Function
@@ -402,23 +317,16 @@ function ArcaneMageRotation.Execute()
         return
     end
     
-    if HasBuff("player", BUFFS.RUPTURE_BUFF) then
-        message("temporaaaal")
-    end
-
     -- Check if we're channeling missiles
     local isChannelingMissiles = IsChanneling()
     if isChannelingMissiles then
         if castingState.channelSpell and string.find(castingState.channelSpell, SPELLS.ARCANE_MISSILES) then
             -- Check if we need to refresh rupture and don't have the buff
-            if HasBuff("player", BUFFS.RUPTURE_BUFF) and IsSpellReady(SPELLS.ARCANE_RUPTURE) then
-            -- if IsSpellReady(SPELLS.ARCANE_RUPTURE) then
+            if not HasBuff("player", BUFFS.RUPTURE_BUFF) and IsSpellReady(SPELLS.ARCANE_RUPTURE) then
                 -- In vanilla, we can't stop channeling directly
                 -- Instead, we flag that we want to interrupt and let the player handle it
                 castingState.shouldInterruptChannel = true
-                -- CastSpell(SPELLS.ARCANE_RUPTURE)
-                message("Should interrupt missiles to refresh rupture (move slightly or press ESC)")
-                -- SpellStopCasting()
+                DebugPrint("Should interrupt missiles to refresh rupture (move slightly or press ESC)")
                 return
             else
                 DebugPrint("Channeling missiles, continuing...")
@@ -487,8 +395,7 @@ function ArcaneMageRotation.Execute()
         end
         
         -- Rupture if we don't have the buff
-        -- if not HasBuff("player", BUFFS.RUPTURE_BUFF) and IsSpellReady(SPELLS.ARCANE_RUPTURE) then
-        if HasBuff("player", BUFFS.RUPTURE_BUFF) and IsSpellReady(SPELLS.ARCANE_RUPTURE) then
+        if not HasBuff("player", BUFFS.RUPTURE_BUFF) and IsSpellReady(SPELLS.ARCANE_RUPTURE) then
             CastSpell(SPELLS.ARCANE_RUPTURE)
             return
         end
@@ -518,8 +425,6 @@ eventFrame:RegisterEvent("SPELLCAST_INTERRUPTED")
 eventFrame:RegisterEvent("SPELLCAST_STOP")
 eventFrame:RegisterEvent("SPELLCAST_FAILED")
 eventFrame:RegisterEvent("CHAT_MSG_SPELL_SELF_DAMAGE")
-eventFrame:RegisterEvent("CHAT_MSG_SPELL_CREATURE_VS_SELF_DAMAGE")
-eventFrame:RegisterEvent("CHAT_MSG_SPELL_SELF_BUFF")
 eventFrame:SetScript("OnEvent", OnEvent)
 
 -- Slash command setup
@@ -534,14 +439,13 @@ SlashCmdList["ARCANEROT"] = function(msg)
         DEFAULT_CHAT_FRAME:AddMessage("- Haste threshold: " .. CONFIG.HASTE_THRESHOLD .. "%")
         DEFAULT_CHAT_FRAME:AddMessage("- Debug mode: " .. (CONFIG.DEBUG and "enabled" or "disabled"))
         DEFAULT_CHAT_FRAME:AddMessage("- Pre-combat rupture: " .. (CONFIG.PRECAST_RUPTURE and "enabled" or "disabled"))
-        DEFAULT_CHAT_FRAME:AddMessage("- Arcane Surge slot: " .. (CONFIG.ARCANE_SURGE_SLOT or "not set"))
+        DEFAULT_CHAT_FRAME:AddMessage("- pfUI detected: " .. (pfUI and "yes" or "no"))
         DEFAULT_CHAT_FRAME:AddMessage("- Surge usable: " .. (IsArcaneSurgeUsable() and "yes" or "no"))
         DEFAULT_CHAT_FRAME:AddMessage("- Should interrupt channel: " .. (castingState.shouldInterruptChannel and "yes" or "no"))
         DEFAULT_CHAT_FRAME:AddMessage("- Shift key pressed: " .. (IsShiftPressed() and "yes" or "no"))
     elseif msg == "resetresist" then
         castingState.lastSpellResisted = false
         castingState.resistTime = 0
-        castingState.surgeUsable = false
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Resist state reset")
     elseif msg == "interrupt" then
         castingState.shouldInterruptChannel = false
@@ -549,30 +453,10 @@ SlashCmdList["ARCANEROT"] = function(msg)
     elseif msg == "precast" then
         CONFIG.PRECAST_RUPTURE = not CONFIG.PRECAST_RUPTURE
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Pre-combat rupture " .. (CONFIG.PRECAST_RUPTURE and "enabled" or "disabled"))
-    elseif string.find(msg, "setslot") then
-        -- Manually set Arcane Surge slot
-        local _, slot = string.find(msg, "setslot ")
-        if slot then
-            local slotNumber = tonumber(string.sub(msg, slot + 1))
-            if slotNumber and slotNumber >= 1 and slotNumber <= 120 then
-                CONFIG.ARCANE_SURGE_SLOT = slotNumber
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Arcane Surge slot set to " .. slotNumber)
-            else
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Invalid slot number (1-120)")
-            end
-        else
-            DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Usage: /arcane setslot [1-120]")
-        end
     elseif msg == "surge" then
         -- Test surge usability
         local usable = IsArcaneSurgeUsable()
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Arcane Surge usable: " .. (usable and "yes" or "no"))
-        if CONFIG.ARCANE_SURGE_SLOT then
-            local isUsable, notEnoughMana = IsUsableAction(CONFIG.ARCANE_SURGE_SLOT)
-            DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Slot " .. CONFIG.ARCANE_SURGE_SLOT .. " usable: " .. (isUsable and "yes" or "no") .. ", mana: " .. (notEnoughMana and "insufficient" or "sufficient"))
-        else
-            DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: No slot set - use /arcane setslot [number]")
-        end
     else
         ArcaneMageRotation.Execute()
     end
@@ -583,11 +467,6 @@ function ArcaneMageRotation_KeyPress()
     ArcaneMageRotation.Execute()
 end
 
--- Keybind function (assign this to a key)
-function ArcaneMageRotation_KeyPressV2()
-    ArcaneMageRotation.ExecuteEnhanced()
-end
-    
 -- Integration with nampower (if available)
 if nampower then
     local originalExecute = ArcaneMageRotation.Execute
@@ -617,7 +496,6 @@ ArcaneMageRotationAPI = {
     ResetResistState = function()
         castingState.lastSpellResisted = false
         castingState.resistTime = 0
-        castingState.surgeUsable = false
     end,
     ClearInterruptFlag = function()
         castingState.shouldInterruptChannel = false
@@ -625,12 +503,7 @@ ArcaneMageRotationAPI = {
     TogglePrecastRupture = function()
         CONFIG.PRECAST_RUPTURE = not CONFIG.PRECAST_RUPTURE
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Pre-combat rupture " .. (CONFIG.PRECAST_RUPTURE and "enabled" or "disabled"))
-    end,
-    SetArcaneSurgeSlot = function(slot)
-        CONFIG.ARCANE_SURGE_SLOT = slot
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00[Arcane Rotation]: Arcane Surge slot set to " .. slot)
     end
 }
 
-DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Arcane Mage Rotation loaded!")
-DEFAULT_CHAT_FRAME:AddMessage("|cFFFFFF00Setup: Place Arcane Surge on action bar, then use /arcane setslot [number]")
+DEFAULT_CHAT_FRAME:AddMessage("|cFF00FF00Arcane Mage Rotation loaded! Use /arcane to execute, hold Shift for cooldowns")
